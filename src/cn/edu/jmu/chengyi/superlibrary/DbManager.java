@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -31,11 +32,21 @@ public class DbManager {
 	public static final String TAG_PWD = "password";
 	public static final String TAG_PMS = "permission";
 
+	public static final String BORROW_TABLE = "borrowLog";
+	public static final String TAG_BORROWER_ID = "borrowerId";
+	public static final String TAG_BOOK_ID = "bookId";
+	public static final String TAG_START_TIME = "startTime";
+	public static final String TAG_END_TIME = "endTime";
+	public static final String TAG_IS_RETURN = "isReturn";
+
 	public static final String SQL_ADD_BOOK = String.format("insert into %s (%s,%s,%s,%s,%s,%s) values (?,?,?,?,?,?)",
 			BOOK_TABLE, TAG_TYPE, TAG_NAME, TAG_COUNT, TAG_AUTHOR, TAG_PRICE, TAG_PAGE);
 
 	public static final String SQL_ADD_USER = String.format("insert into %s (%s,%s,%s) values(?,?,?)", USER_TABLE,
 			TAG_NAME, TAG_PWD, TAG_PMS);
+
+	public static final String SQL_ADD_LOG = String.format("insert into %s (%s,%s,%s,%s) values (?,?,?,?)",
+			BORROW_TABLE, TAG_BORROWER_ID, TAG_BOOK_ID, TAG_START_TIME, TAG_END_TIME);
 
 	public static String sqlRemove(String table, String tagName) {
 		return String.format("delete from %s where %s=?", table, TAG_ID);
@@ -47,6 +58,10 @@ public class DbManager {
 
 	public static String sqlSelect(String table, String keyName) {
 		return String.format("select * from %s where %s=?", table, keyName);
+	}
+
+	public static String sqlSelect(String table, String keyName1, String keyName2) {
+		return String.format("select * from %s where %s=? and %s=?", table, keyName1, keyName2);
 	}
 
 	public static String sqlUpdate(String table, String keyName) {
@@ -90,10 +105,15 @@ public class DbManager {
 	private PreparedStatement getBookId;
 	private PreparedStatement getBookName;
 	private PreparedStatement getBookAuth;
+	private PreparedStatement getBookNameAuth;
 	private PreparedStatement getUsrId;
 	private PreparedStatement getUsrName;
 	private PreparedStatement addUsr;
 	private PreparedStatement rmUserId;
+	private PreparedStatement addLog;
+	private PreparedStatement getLog;
+
+	private static final Object LOCK = new Object();
 
 	private DbManager() {
 		try {
@@ -139,11 +159,14 @@ public class DbManager {
 		getUsrName = null;
 		addUsr = null;
 		rmUserId = null;
+		addLog = null;
 	}
 
 	private PreparedStatement checkStatement(PreparedStatement prep, Supplier<String> getSql) throws SQLException {
 		if (prep == null || prep.isClosed()) {
-			return connect.prepareStatement(getSql.get());
+			synchronized (LOCK) {
+				return connect.prepareStatement(getSql.get());
+			}
 		} else {
 			return prep;
 		}
@@ -190,6 +213,10 @@ public class DbManager {
 		}
 	}
 
+	public boolean hasBook(int id) throws SQLException {
+		return getBook(id).isPresent();
+	}
+
 	public Optional<Book> getBook(int id) throws SQLException {
 		getBookId = checkStatement(getBookId, () -> sqlSelect(BOOK_TABLE, TAG_ID));
 		getBookId.setInt(1, id);
@@ -209,6 +236,13 @@ public class DbManager {
 		getBookAuth = checkStatement(getBookAuth, () -> sqlSelect(BOOK_TABLE, TAG_AUTHOR));
 		getBookAuth.setString(1, author);
 		return getBook(getBookAuth);
+	}
+
+	public List<Book> getBooksWithNameAndAuthor(String name, String author) throws SQLException {
+		getBookNameAuth = checkStatement(getBookNameAuth, () -> sqlSelect(BOOK_TABLE, TAG_NAME, TAG_AUTHOR));
+		getBookNameAuth.setString(1, name);
+		getBookNameAuth.setString(2, author);
+		return getBook(getBookNameAuth);
 	}
 
 	public List<Book> getAllBooks() throws SQLException {
@@ -332,5 +366,29 @@ public class DbManager {
 		if (!u.isPresent())
 			throw new IllegalArgumentException("no user id" + name);
 		removeUser(u.get());
+	}
+
+	public void addBorrowLog(Book book, User user, Date returnTime) throws SQLException {
+		if (!hasBook(book.getId()) || !hasUser(user.getId())) {
+			throw new IllegalArgumentException();
+		}
+		addLog = checkStatement(addLog, () -> SQL_ADD_LOG);
+		addLog.setInt(1, book.getId());
+		addLog.setInt(2, user.getId());
+		addLog.setString(3, String.valueOf(System.currentTimeMillis()));
+		addLog.setString(4, String.valueOf(returnTime.getTime()));
+		addLog.execute();
+	}
+
+	public List<BorrowLog> getBorrowLog(User user) throws SQLException {
+		getLog = checkStatement(getLog, () -> sqlSelect(BORROW_TABLE, TAG_BORROWER_ID));
+		getLog.setInt(1, user.getId());
+		ResultSet set = getLog.executeQuery();
+		List<BorrowLog> result = new ArrayList<>();
+		while (set.next()) {
+			result.add(new BorrowLog(set.getInt(1), set.getInt(2), set.getInt(3), set.getString(4), set.getString(5),
+					set.getBoolean(6)));
+		}
+		return result;
 	}
 }

@@ -2,6 +2,9 @@ package cn.edu.jmu.chengyi.superlibrary;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,11 +30,17 @@ public class Main {
 //		for(Book bk : b) {
 //			System.out.println(bk);
 //		}
-		
+
 //		manager.addUser("kabi0210", "2333", DbManager::SHA1);
-		System.out.println(DbManager.SHA1("2333"));
-		System.out.println(manager.getUser("kabi0210"));
-		
+//		System.out.println(DbManager.SHA1("2333"));
+//		System.out.println(manager.getUser("kabi0210"));
+
+		long a = System.currentTimeMillis();
+		Date d = new Date(a);
+		System.out.println(a);
+		System.out.println(d);
+		System.out.println(d.getTime());
+
 		manager.closeConnect();
 	}
 }
