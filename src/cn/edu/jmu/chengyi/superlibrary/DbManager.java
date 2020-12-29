@@ -86,6 +86,7 @@ public class DbManager {
 	private PreparedStatement rmBookId;
 	private PreparedStatement rmBookName;
 	private PreparedStatement rmBookNameAuth;
+	private PreparedStatement getBooks;
 	private PreparedStatement getBookId;
 	private PreparedStatement getBookName;
 	private PreparedStatement getBookAuth;
@@ -208,6 +209,11 @@ public class DbManager {
 		getBookAuth = checkStatement(getBookAuth, () -> sqlSelect(BOOK_TABLE, TAG_AUTHOR));
 		getBookAuth.setString(1, author);
 		return getBook(getBookAuth);
+	}
+
+	public List<Book> getAllBooks() throws SQLException {
+		getBooks = checkStatement(addBook, () -> "select * from " + BOOK_TABLE);
+		return getBook(getBooks);
 	}
 
 	private List<Book> getBook(PreparedStatement prep) throws SQLException {
