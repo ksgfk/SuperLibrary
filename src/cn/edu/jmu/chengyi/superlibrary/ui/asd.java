@@ -17,12 +17,65 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
+import javax.management.ValueExp;
 import javax.swing.AbstractListModel;
+import javax.swing.JButton;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
+import javax.swing.UIManager;
+import javax.swing.border.SoftBevelBorder;
+
+import com.mysql.fabric.xmlrpc.base.Value;
+
+import cn.edu.jmu.chengyi.superlibrary.Book;
+import cn.edu.jmu.chengyi.superlibrary.User;
+
+import javax.swing.border.BevelBorder;
+
+/**
+ * wdnmd
+ */
+class wdnmd {
+    public int a;
+    public int b;
+
+    public int getA() {
+        return a;
+    }
+
+    public int getB() {
+        return b;
+    }
+
+    public void setA(int a) {
+        this.a = a;
+    }
+
+    public void setB(int b) {
+        this.b = b;
+    }
+
+    wdnmd(int a, int b) {
+        setA(a);
+        setB(b);
+    }
+
+    @Override
+    public String toString() {
+        return a + " ";
+    }
+
+    public String newString() {
+        return a + b + " ";
+    }
+}
 
 public class asd extends JFrame {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private JPanel contentPane;
 
     /**
@@ -50,42 +103,69 @@ public class asd extends JFrame {
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         contentPane.setLayout(new BorderLayout(0, 0));
-        
-        
-        // setContentPane(contentPane);
-//        
-//        
-//        JTextArea textArea = new JTextArea();
-//        textArea.setBounds(84, 142, 108, 192);
-//        
-//        
-//        //((Object) scrollBar).setViewPortView(textArea);
-//        
-//        getContentPane().add(textArea);
-//        
-//        JScrollBar scrollBar = new JScrollBar();
-//        scrollBar.setBounds(190, 142, 17, 192);
-//        getContentPane().add(scrollBar);
         getContentPane().setLayout(null);
-        
-        JList list = new JList();
-        list.setBorder(new LineBorder(new Color(0, 0, 0)));
-        list.setModel(new AbstractListModel() {
-        	String[] values = new String[] {"1", "1", "12341", "1", "64324", "1", "1", "43432432", "423", "4", "235", "34", "623454"};
-        	public int getSize() {
-        		return values.length;
-        	}
-        	public Object getElementAt(int index) {
-        		return values[index];
-        	}
-        });
-        list.setSelectedIndex(20);
-        list.setBounds(322, 173, 49, 132);
-        getContentPane().add(list);
-        
-        JScrollBar scrollBar = new JScrollBar();
-        scrollBar.setBounds(372, 173, 17, 132);
-        getContentPane().add(scrollBar);
 
+        JList<wdnmd> list = new JList<wdnmd>();
+        list.setModel(new AbstractListModel<wdnmd>() {
+            private static final long serialVersionUID = 1L;
+            wdnmd values[] = new wdnmd[1];
+            {
+                values[0] = new wdnmd(1, 2);
+            }
+
+            public int getSize() {
+                return values.length;
+            }
+
+            public wdnmd getElementAt(int index) {
+                return values[index];
+            }
+        });
+
+        JScrollPane scroll = new JScrollPane(list);
+        scroll.setBounds(8, 8, 310, 220);
+        getContentPane().add(scroll);
+
+        JButton btnNewButton = new JButton("New button");
+        btnNewButton.setBounds(232, 338, 93, 23);
+        getContentPane().add(btnNewButton);
+
+        JLabel lblNewLabel = new JLabel("书名");
+        lblNewLabel.setVerticalAlignment(SwingConstants.TOP);
+        lblNewLabel.setBounds(328, 10, 27, 23);
+        getContentPane().add(lblNewLabel);
+
+        JLabel lblNewLabel_1 = new JLabel("作者");
+        lblNewLabel_1.setBounds(328, 43, 54, 15);
+        getContentPane().add(lblNewLabel_1);
+
+        JLabel lblNewLabel_2 = new JLabel("存库");
+        lblNewLabel_2.setBounds(328, 75, 54, 15);
+        getContentPane().add(lblNewLabel_2);
+
+        JLabel lblNewLabel_3 = new JLabel("类型");
+        lblNewLabel_3.setBounds(328, 117, 54, 15);
+        getContentPane().add(lblNewLabel_3);
+
+        JLabel lblNewLabel_4 = new JLabel("");
+        lblNewLabel_4.setBounds(365, 10, 54, 15);
+        getContentPane().add(lblNewLabel_4);
+
+        JLabel lblNewLabel_5 = new JLabel("");
+        lblNewLabel_5.setBounds(365, 43, 54, 15);
+        getContentPane().add(lblNewLabel_5);
+
+        JLabel lblNewLabel_6 = new JLabel("");
+        lblNewLabel_6.setBounds(365, 75, 54, 15);
+        getContentPane().add(lblNewLabel_6);
+
+        JLabel lblNewLabel_7 = new JLabel("");
+        lblNewLabel_7.setBounds(365, 117, 54, 15);
+        getContentPane().add(lblNewLabel_7);
+
+        btnNewButton.addActionListener(arg -> {
+            // lblNewLabel.setText(list.getSelectedValue().newString() + "\ncnm nmsl ");
+            // list.getSelectedValue().newString();
+        });
     }
 }
