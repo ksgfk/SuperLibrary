@@ -25,23 +25,26 @@ public class DbManager {
 	public static final String TAG_PRICE = "price";
 	public static final String TAG_PAGE = "page";
 
+	public static final String USER_TABLE = "users";
+//	public static final String TAG_
+
 	public static final String SQL_ADD_BOOK = String.format("insert into %s (%s,%s,%s,%s,%s,%s) values (?,?,?,?,?,?)",
 			BOOK_TABLE, TAG_TYPE, TAG_NAME, TAG_COUNT, TAG_AUTHOR, TAG_PRICE, TAG_PAGE);
 
-	public static String sqlRemove(String tagName) {
-		return String.format("delete from %s where %s=?", BOOK_TABLE, TAG_ID);
+	public static String sqlRemove(String table, String tagName) {
+		return String.format("delete from %s where %s=?", table, TAG_ID);
 	}
 
-	public static String sqlRemove(String tagName1, String tagName2) {
-		return String.format("delete from %s where %s=? and %s=?", BOOK_TABLE, tagName1, tagName2);
+	public static String sqlRemove(String table, String tagName1, String tagName2) {
+		return String.format("delete from %s where %s=? and %s=?", table, tagName1, tagName2);
 	}
 
-	public static String sqlSelect(String keyName) {
-		return String.format("select * from %s where %s=?", BOOK_TABLE, keyName);
+	public static String sqlSelect(String table, String keyName) {
+		return String.format("select * from %s where %s=?", table, keyName);
 	}
 
-	public static String sqlUpdate(String keyName) {
-		return String.format("update %s set %s=? where id=?", BOOK_TABLE, keyName);
+	public static String sqlUpdate(String table, String keyName) {
+		return String.format("update %s set %s=? where id=?", table, keyName);
 	}
 
 	private static class Instance {
@@ -53,13 +56,15 @@ public class DbManager {
 	}
 
 	private Connection connect;
-	private PreparedStatement addState;
-	private PreparedStatement rmIdState;
-	private PreparedStatement rmNameState;
-	private PreparedStatement rmNameAuthState;
-	private PreparedStatement getIdState;
-	private PreparedStatement getNameState;
-	private PreparedStatement getAuthState;
+	private PreparedStatement addBook;
+	private PreparedStatement rmBookId;
+	private PreparedStatement rmBookName;
+	private PreparedStatement rmBookNameAuth;
+	private PreparedStatement getBookId;
+	private PreparedStatement getBookName;
+	private PreparedStatement getBookAuth;
+	
+	private PreparedStatement getUsrId;
 
 	private DbManager() {
 		try {
@@ -102,36 +107,36 @@ public class DbManager {
 
 	public void addBook(BookType type, String name, int count, String author, BigDecimal price, int page)
 			throws SQLException {
-		addState = checkStatement(addState, () -> SQL_ADD_BOOK);
-		addState.setString(1, type.name());
-		addState.setString(2, name);
-		addState.setInt(3, count);
-		addState.setString(4, author);
-		addState.setBigDecimal(5, price);
-		addState.setInt(6, page);
-		boolean result = addState.execute();
+		addBook = checkStatement(addBook, () -> SQL_ADD_BOOK);
+		addBook.setString(1, type.name());
+		addBook.setString(2, name);
+		addBook.setInt(3, count);
+		addBook.setString(4, author);
+		addBook.setBigDecimal(5, price);
+		addBook.setInt(6, page);
+		boolean result = addBook.execute();
 		if (result) {
 			throw new IllegalStateException("unknown error");
 		}
 	}
 
 	public void removeBook(int id) throws SQLException {
-		rmIdState = checkStatement(rmIdState, () -> sqlRemove(TAG_ID));
-		rmIdState.setInt(1, id);
-		removeBook(rmIdState);
+		rmBookId = checkStatement(rmBookId, () -> sqlRemove(BOOK_TABLE, TAG_ID));
+		rmBookId.setInt(1, id);
+		removeBook(rmBookId);
 	}
 
 	public void removeBook(String name) throws SQLException {
-		rmNameState = checkStatement(rmNameState, () -> sqlRemove(TAG_NAME));
-		rmNameState.setString(1, name);
-		removeBook(rmNameState);
+		rmBookName = checkStatement(rmBookName, () -> sqlRemove(BOOK_TABLE, TAG_NAME));
+		rmBookName.setString(1, name);
+		removeBook(rmBookName);
 	}
 
 	public void removeBook(String name, String author) throws SQLException {
-		rmNameAuthState = checkStatement(rmNameState, () -> sqlRemove(TAG_NAME, TAG_AUTHOR));
-		rmNameAuthState.setString(1, name);
-		rmNameAuthState.setString(2, author);
-		removeBook(rmNameAuthState);
+		rmBookNameAuth = checkStatement(rmBookName, () -> sqlRemove(BOOK_TABLE, TAG_NAME, TAG_AUTHOR));
+		rmBookNameAuth.setString(1, name);
+		rmBookNameAuth.setString(2, author);
+		removeBook(rmBookNameAuth);
 	}
 
 	private void removeBook(PreparedStatement prep) throws SQLException {
@@ -142,24 +147,24 @@ public class DbManager {
 	}
 
 	public Optional<Book> getBook(int id) throws SQLException {
-		getIdState = checkStatement(getIdState, () -> sqlSelect(TAG_ID));
-		getIdState.setInt(1, id);
-		List<Book> result = getBook(getIdState);
+		getBookId = checkStatement(getBookId, () -> sqlSelect(BOOK_TABLE, TAG_ID));
+		getBookId.setInt(1, id);
+		List<Book> result = getBook(getBookId);
 		if (result.size() != 1)
 			return Optional.empty();
 		return Optional.of(result.get(0));
 	}
 
 	public List<Book> getBooksWithName(String name) throws SQLException {
-		getNameState = checkStatement(getNameState, () -> sqlSelect(TAG_NAME));
-		getNameState.setString(1, name);
-		return getBook(getNameState);
+		getBookName = checkStatement(getBookName, () -> sqlSelect(BOOK_TABLE, TAG_NAME));
+		getBookName.setString(1, name);
+		return getBook(getBookName);
 	}
 
 	public List<Book> getBooksWithAuthor(String author) throws SQLException {
-		getAuthState = checkStatement(getAuthState, () -> sqlSelect(TAG_AUTHOR));
-		getAuthState.setString(1, author);
-		return getBook(getAuthState);
+		getBookAuth = checkStatement(getBookAuth, () -> sqlSelect(BOOK_TABLE, TAG_AUTHOR));
+		getBookAuth.setString(1, author);
+		return getBook(getBookAuth);
 	}
 
 	private List<Book> getBook(PreparedStatement prep) throws SQLException {
@@ -178,10 +183,10 @@ public class DbManager {
 		return books;
 	}
 
-	public void setBook(Book book, String tag, Object value) throws SQLException {
+	public Book setBook(Book book, String tag, Object value) throws SQLException {
 		if (tag.equals(TAG_ID))
 			throw new IllegalArgumentException("Can't update id");
-		PreparedStatement prep = connect.prepareStatement(sqlUpdate(tag));
+		PreparedStatement prep = connect.prepareStatement(sqlUpdate(BOOK_TABLE, tag));
 		if (value instanceof Integer) {
 			prep.setInt(1, (int) value);
 		} else if (value instanceof String) {
@@ -196,5 +201,18 @@ public class DbManager {
 		if (result != 1) {
 			throw new IllegalStateException("unknown error");
 		}
+		return getBook(book.getId()).get();
 	}
+
+//	public void addUser(String name, String password) {
+//		
+//	}
+//	
+//	public boolean hasUser() {
+//		
+//	}
+//	
+//	public Optional<User> getUser(int id) {
+//		getUsrId = checkStatement(getUsrId, ()->sqlSelect());
+//	}
 }

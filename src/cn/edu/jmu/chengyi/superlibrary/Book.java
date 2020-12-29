@@ -4,12 +4,12 @@ import java.math.BigDecimal;
 
 public final class Book {
 	private final int id;
-	private BookType type;
-	private String name;
-	private int count;
-	private String author;
-	private BigDecimal price;
-	private int page;
+	private final BookType type;
+	private final String name;
+	private final int count;
+	private final String author;
+	private final BigDecimal price;
+	private final int page;
 
 	Book(int id, BookType type, String name, int count, String author, BigDecimal price, int page) {
 		this.id = id;
