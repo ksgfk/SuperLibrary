@@ -19,6 +19,10 @@ public final class BorrowLog {
 		this.isReturn = isReturn;
 	}
 
+	public int getId() {
+		return id;
+	}
+	
 	public int getBorrowerId() {
 		return borrowerId;
 	}

@@ -111,7 +111,9 @@ public class DbManager {
 	private PreparedStatement addUsr;
 	private PreparedStatement rmUserId;
 	private PreparedStatement addLog;
-	private PreparedStatement getLog;
+	private PreparedStatement getLogId;
+	private PreparedStatement getLogBk;
+	private PreparedStatement setLogRt;
 
 	private static final Object LOCK = new Object();
 
@@ -144,22 +146,6 @@ public class DbManager {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		Clear();
-	}
-
-	private void Clear() {
-		addBook = null;
-		rmBookId = null;
-		rmBookName = null;
-		rmBookNameAuth = null;
-		getBookId = null;
-		getBookName = null;
-		getBookAuth = null;
-		getUsrId = null;
-		getUsrName = null;
-		addUsr = null;
-		rmUserId = null;
-		addLog = null;
 	}
 
 	private PreparedStatement checkStatement(PreparedStatement prep, Supplier<String> getSql) throws SQLException {
@@ -381,14 +367,31 @@ public class DbManager {
 	}
 
 	public List<BorrowLog> getBorrowLog(User user) throws SQLException {
-		getLog = checkStatement(getLog, () -> sqlSelect(BORROW_TABLE, TAG_BORROWER_ID));
-		getLog.setInt(1, user.getId());
-		ResultSet set = getLog.executeQuery();
+		getLogId = checkStatement(getLogId, () -> sqlSelect(BORROW_TABLE, TAG_BORROWER_ID));
+		getLogId.setInt(1, user.getId());
+		return getBorrowLog(getLogId);
+	}
+
+	public List<BorrowLog> getBorrowLog(Book book) throws SQLException {
+		getLogBk = checkStatement(getLogBk, () -> sqlSelect(BORROW_TABLE, TAG_BOOK_ID));
+		getLogBk.setInt(1, book.getId());
+		return getBorrowLog(getLogBk);
+	}
+
+	private List<BorrowLog> getBorrowLog(PreparedStatement sql) throws SQLException {
+		ResultSet set = sql.executeQuery();
 		List<BorrowLog> result = new ArrayList<>();
 		while (set.next()) {
 			result.add(new BorrowLog(set.getInt(1), set.getInt(2), set.getInt(3), set.getString(4), set.getString(5),
 					set.getBoolean(6)));
 		}
 		return result;
+	}
+
+	public void setBookReturn(BorrowLog log, boolean isReturn) throws SQLException {
+		setLogRt = checkStatement(setLogRt, () -> sqlUpdate(BORROW_TABLE, TAG_IS_RETURN));
+		setLogRt.setBoolean(1, isReturn);
+		setLogRt.setInt(2, log.getId());
+		setLogRt.execute();
 	}
 }

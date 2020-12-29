@@ -26,20 +26,14 @@ public class Main {
 //		manager.setBook(b.get(), DbManager.TAG_COUNT, 3);
 //		b = manager.getBook(10);
 //		System.out.println(b);
-//		List<Book> b = manager.getBooksWithName("猫猫头");
-//		for(Book bk : b) {
-//			System.out.println(bk);
-//		}
+		List<Book> b = manager.getBooksWithName("猫猫头");
+		for(Book bk : b) {
+			System.out.println(bk);
+		}
 
 //		manager.addUser("kabi0210", "2333", DbManager::SHA1);
 //		System.out.println(DbManager.SHA1("2333"));
 //		System.out.println(manager.getUser("kabi0210"));
-
-		long a = System.currentTimeMillis();
-		Date d = new Date(a);
-		System.out.println(a);
-		System.out.println(d);
-		System.out.println(d.getTime());
 
 		manager.closeConnect();
 	}
