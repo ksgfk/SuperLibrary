@@ -2,8 +2,8 @@ package cn.edu.jmu.chengyi.superlibrary;
 
 import java.math.BigDecimal;
 
-public class Book {
-	private int id;
+public final class Book {
+	private final int id;
 	private BookType type;
 	private String name;
 	private int count;
@@ -48,10 +48,29 @@ public class Book {
 	public int getPage() {
 		return page;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "Book [id=" + id + ", type=" + type + ", name=" + name + ", count=" + count + ", author=" + author
 				+ ", price=" + price + ", page=" + page + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		return id;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Book other = (Book) obj;
+		if (id != other.id)
+			return false;
+		return true;
 	}
 }
