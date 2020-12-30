@@ -12,6 +12,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.EmptyBorder;
 
 import java.awt.*;
+import java.util.stream.Collectors;
 
 import cn.edu.jmu.chengyi.superlibrary.Book;
 import cn.edu.jmu.chengyi.superlibrary.DbManager;
@@ -54,12 +55,12 @@ public class WindowsControl {
     public static void main(String[] args) {
         // Buffer.main(null);
         ListBooks();
-        AddNewBook();
+        //AddNewBook();
         // ConsoleControl frame = new ConsoleControl();
     }
 
     private static void ListBooks() {
-        // long serialVersionUID = 1L;J
+        // long serialVersionUID = 1L;
         JFrame frame = new JFrame();
         Font nf = new Font("宋体", Font.PLAIN, 13);
         BookList = new ArrayList<>();
@@ -86,6 +87,8 @@ public class WindowsControl {
         JScrollPane scroll = new JScrollPane(list);
         scroll.setBounds(8, 8, 310, 220);
         contentPane.add(scroll);
+
+        list.setListData(new ShowBook[]{new ShowBook(Book.NoonBook), new ShowBook(Book.NoonBook)});
 
         JLabel lblNewLabel = new JLabel("书名");
         lblNewLabel.setFont(nf);
@@ -128,7 +131,7 @@ public class WindowsControl {
         btnNewButton.setBounds(250, 300, 100, 50);
         contentPane.add(btnNewButton);
 
-        JButton btnNewButton_1 = new JButton("刷新");
+        JButton btnNewButton_1 = new JButton("列举书籍");
         btnNewButton_1.setFont(nf);
         btnNewButton_1.setBounds(100, 300, 100, 50);
         contentPane.add(btnNewButton_1);
@@ -139,23 +142,31 @@ public class WindowsControl {
         contentPane.add(FindBook);
 
         FindBook.addActionListener(arg -> {
-            Find();
+            Find(list);
         });
 
-        btnNewButton_1.addActionListener(arg -> {
-            try {
-                BookList = DbManager.getInstance().getAllBooks();
-            } catch (SQLException e) {
-                System.out.println(e);
-            }
-        });
 
-        btnNewButton.addActionListener(arg -> {
+        list.addListSelectionListener(args->{
             lbName.setText(list.getSelectedValue().bk.getName());
             lbAuthor.setText(list.getSelectedValue().bk.getAuthor());
             lbCount.setText(String.valueOf(list.getSelectedValue().bk.getCount()));
             lbType.setText(String.valueOf(list.getSelectedValue().bk.getType()));
         });
+        btnNewButton_1.addActionListener(arg -> {
+            try {
+                BookList = DbManager.getInstance().getAllBooks();
+                list.setListData(BookList.stream().map(ShowBook::new).toArray(ShowBook[]::new));
+            } catch (SQLException e) {
+                System.out.println(e);
+            }
+        });
+
+//        btnNewButton.addActionListener(arg -> {
+//            lbName.setText(list.getSelectedValue().bk.getName());
+//            lbAuthor.setText(list.getSelectedValue().bk.getAuthor());
+//            lbCount.setText(String.valueOf(list.getSelectedValue().bk.getCount()));
+//            lbType.setText(String.valueOf(list.getSelectedValue().bk.getType()));
+//        });
 
         contentPane.setLayout(null);
 
@@ -187,7 +198,7 @@ public class WindowsControl {
         frame.dispose();
     }
 
-    public static void Find() {
+    public static void Find(JList<ShowBook> list) {
         JFrame frame = new JFrame("查询界面");
         frame.setSize(270, 200);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -217,14 +228,15 @@ public class WindowsControl {
         panel.add(lkfButton);
         lkfButton.addActionListener(arg -> {
             try {
-                if (BookNameText.getText().equals("")) {
-                    if (authorText.getText().equals("")) {
+                System.out.println("*****"+BookNameText.getText()+"*****"+authorText.getText()+"*****");
+                if (BookNameText.getText().length() == 0) {
+                    if (authorText.getText().length() == 0) {
 
                     } else {
                         books = DbManager.getInstance().getBooksWithAuthor(authorText.getText());
                     }
                 } else {
-                    if (author.getText().equals("")) {
+                    if (author.getText().length() == 0) {
                         books = DbManager.getInstance().getBooksWithName(BookNameText.getText());
                     } else {
                         books = DbManager.getInstance().getBooksWithNameAndAuthor(BookNameText.getText(),
@@ -233,11 +245,12 @@ public class WindowsControl {
                 }
                 // BookList = books;
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
             if (books.size() == 0) {
                 Popup(frame, "查无此书");
             } else {
+                list.setListData(books.stream().map(ShowBook::new).toArray(ShowBook[]::new));
                 FindSuccess(frame);
             }
             // Popup(frame);
@@ -341,7 +354,7 @@ public class WindowsControl {
 
         JComboBox comboBox = new JComboBox();
         comboBox.setFont(new Font("新宋体", Font.PLAIN, 16));
-        comboBox.setModel(new DefaultComboBoxModel(new String[] { "Science", "Education", "History", "Literature" }));
+        comboBox.setModel(new DefaultComboBoxModel(new String[]{"Science", "Education", "History", "Literature"}));
 
         JLabel lblNewLabel_1_1 = new JLabel("数目");
         lblNewLabel_1_1.setFont(new Font("新宋体", Font.PLAIN, 16));
@@ -376,14 +389,14 @@ public class WindowsControl {
         GroupLayout gl_contentPane = new GroupLayout(contentPane);
 
         /*
-         * 
-         * 
-         * 
+         *
+         *
+         *
          * 中间的内容是是自己编辑的
-         * 
-         * 
-         * 
-         * 
+         *
+         *
+         *
+         *
          */
         btnNewButton.addActionListener(arg -> {
             if (textField.getText().equals("")) {
@@ -407,14 +420,14 @@ public class WindowsControl {
             }
         });
         /*
-         * 
-         * 
-         * 
+         *
+         *
+         *
          * 中间的内容是是自己编辑的
-         * 
-         * 
-         * 
-         * 
+         *
+         *
+         *
+         *
          */
         gl_contentPane.setHorizontalGroup(gl_contentPane.createParallelGroup(Alignment.LEADING).addGroup(gl_contentPane
                 .createSequentialGroup().addGap(31)

@@ -8,9 +8,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import cn.edu.jmu.chengyi.superlibrary.ui.WindowsControl;
+
 public class Main {
-	public static void main(String[] args) throws SQLException {
+	static {
 		DbManager.getInstance().createConnect("root", "123456");
+	}
+
+	public static void main(String[] args) throws SQLException {
 		DbManager manager = DbManager.getInstance();
 
 //		manager.addBook(BookType.Science, "猫猫头", 1, "???", new BigDecimal("621"), 231);
@@ -26,15 +31,16 @@ public class Main {
 //		manager.setBook(b.get(), DbManager.TAG_COUNT, 3);
 //		b = manager.getBook(10);
 //		System.out.println(b);
-		List<Book> b = manager.getBooksWithName("猫猫头");
-		for(Book bk : b) {
-			System.out.println(bk);
-		}
+//		List<Book> b = manager.getBooksWithName("猫猫头");
+//		for(Book bk : b) {
+//			System.out.println(bk);
+//		}
 
 //		manager.addUser("kabi0210", "2333", DbManager::SHA1);
 //		System.out.println(DbManager.SHA1("2333"));
 //		System.out.println(manager.getUser("kabi0210"));
+		WindowsControl.main(null);
 
-		manager.closeConnect();
+//		manager.closeConnect();
 	}
 }
