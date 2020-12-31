@@ -1,6 +1,7 @@
 package cn.edu.jmu.chengyi.superlibrary.ui;
 
 import java.awt.Font;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,11 +13,12 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.EmptyBorder;
 
 import java.awt.*;
-import java.util.stream.Collectors;
 
 import cn.edu.jmu.chengyi.superlibrary.Book;
+import cn.edu.jmu.chengyi.superlibrary.BookType;
 import cn.edu.jmu.chengyi.superlibrary.DbManager;
 import cn.edu.jmu.chengyi.superlibrary.User;
+import cn.edu.jmu.chengyi.superlibrary.UserPermission;
 
 class ShowBook {
     Book bk;
@@ -47,25 +49,28 @@ class LLst extends AbstractListModel<ShowBook> {
 }
 
 public class WindowsControl {
+    private static Font nf = new Font("宋体", Font.PLAIN, 13);
     public static User user;
     public static List<Book> BookList;
     static List<Book> books = new ArrayList<Book>();
+    public static UserPermission us = UserPermission.ADMIN;
+    public static String usname = "DASABI";
     // private JPanel contentPane;
 
     public static void main(String[] args) {
         // Buffer.main(null);
-        ListBooks();
-        //AddNewBook();
+        Start();
+        // ListBooks();
+        // AddNewBook();
         // ConsoleControl frame = new ConsoleControl();
     }
 
     private static void ListBooks() {
         // long serialVersionUID = 1L;
         JFrame frame = new JFrame();
-        Font nf = new Font("宋体", Font.PLAIN, 13);
         BookList = new ArrayList<>();
         BookList.add(Book.NoonBook);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        // frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setBounds(100, 100, 600, 502);
 
         JPanel contentPane = new JPanel();
@@ -78,17 +83,11 @@ public class WindowsControl {
         list.setFont(nf);
         list.setModel(new LLst());
 
-        // JLabel cnm = new JLabel("New label");
-        // cnm.setIcon(new
-        // ImageIcon("C:\\Users\\63569\\Desktop\\11\\P3_files\\guide-thumbnail-p3.png"));
-        // cnm.setBounds(0, 0, 1024, 1024);
-        // getContentPane().add(cnm);
-
         JScrollPane scroll = new JScrollPane(list);
         scroll.setBounds(8, 8, 310, 220);
         contentPane.add(scroll);
 
-        list.setListData(new ShowBook[]{new ShowBook(Book.NoonBook), new ShowBook(Book.NoonBook)});
+        list.setListData(new ShowBook[] { new ShowBook(Book.NoonBook), new ShowBook(Book.NoonBook) });
 
         JLabel lblNewLabel = new JLabel("书名");
         lblNewLabel.setFont(nf);
@@ -145,8 +144,7 @@ public class WindowsControl {
             Find(list);
         });
 
-
-        list.addListSelectionListener(args->{
+        list.addListSelectionListener(args -> {
             lbName.setText(list.getSelectedValue().bk.getName());
             lbAuthor.setText(list.getSelectedValue().bk.getAuthor());
             lbCount.setText(String.valueOf(list.getSelectedValue().bk.getCount()));
@@ -161,37 +159,34 @@ public class WindowsControl {
             }
         });
 
-//        btnNewButton.addActionListener(arg -> {
-//            lbName.setText(list.getSelectedValue().bk.getName());
-//            lbAuthor.setText(list.getSelectedValue().bk.getAuthor());
-//            lbCount.setText(String.valueOf(list.getSelectedValue().bk.getCount()));
-//            lbType.setText(String.valueOf(list.getSelectedValue().bk.getType()));
-//        });
+        // btnNewButton.addActionListener(arg -> {
+        // lbName.setText(list.getSelectedValue().bk.getName());
+        // lbAuthor.setText(list.getSelectedValue().bk.getAuthor());
+        // lbCount.setText(String.valueOf(list.getSelectedValue().bk.getCount()));
+        // lbType.setText(String.valueOf(list.getSelectedValue().bk.getType()));
+        // });
 
         contentPane.setLayout(null);
 
         frame.setVisible(true);
     }
 
-    private static void Popup(JFrame up, String output) {
-        JFrame frame = new JFrame(output);
-        frame.setSize(210, 160);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JPanel panel = new JPanel();
-        frame.add(panel);
-        panel.setLayout(null);
+    public static void MassageBox(JFrame up, String output) {
+        // up.setEnabled(false);
 
-        JButton yes = new JButton(output);
-        yes.setHorizontalAlignment(SwingConstants.CENTER);
-        yes.setFont(new Font("宋体", Font.PLAIN, 23));
-        yes.setBounds(0, 0, 200, 150);
-        panel.add(yes);
-
-        yes.addActionListener(arg -> {
-            up.setEnabled(true);
-            frame.dispose();
-        });
-        frame.setVisible(true);
+        JOptionPane.showConfirmDialog(up, output, output, -1, 2);
+        /*
+         * JFrame frame = new JFrame(output + "\n" + output); frame.setSize(210, 160);
+         * // frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); JPanel panel = new
+         * JPanel(); frame.add(panel); panel.setLayout(null);
+         * 
+         * JButton yes = new JButton(output + "\n\n\n\n" + output);
+         * yes.setHorizontalAlignment(SwingConstants.CENTER); yes.setFont(new Font("宋体",
+         * Font.PLAIN, 15)); yes.setBounds(0, 0, 200, 150); panel.add(yes);
+         * 
+         * yes.addActionListener(arg -> { // up.setEnabled(true); frame.dispose(); });
+         * frame.setVisible(true);
+         */
     }
 
     public static void FindSuccess(JFrame frame) {
@@ -201,7 +196,7 @@ public class WindowsControl {
     public static void Find(JList<ShowBook> list) {
         JFrame frame = new JFrame("查询界面");
         frame.setSize(270, 200);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        // frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel panel = new JPanel();
         frame.add(panel);
 
@@ -228,7 +223,6 @@ public class WindowsControl {
         panel.add(lkfButton);
         lkfButton.addActionListener(arg -> {
             try {
-                System.out.println("*****"+BookNameText.getText()+"*****"+authorText.getText()+"*****");
                 if (BookNameText.getText().length() == 0) {
                     if (authorText.getText().length() == 0) {
 
@@ -248,13 +242,13 @@ public class WindowsControl {
                 e.printStackTrace();
             }
             if (books.size() == 0) {
-                Popup(frame, "查无此书");
+                MassageBox(frame, "查无此书");
             } else {
                 list.setListData(books.stream().map(ShowBook::new).toArray(ShowBook[]::new));
                 FindSuccess(frame);
             }
-            // Popup(frame);
-            frame.setEnabled(false);
+            // MassageBox(frame);
+            // frame.setEnabled(false);
         });
 
         frame.setVisible(true);
@@ -263,7 +257,7 @@ public class WindowsControl {
     private static void Login() {
         JFrame frame = new JFrame("登录界面");
         frame.setSize(270, 230);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        // frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();
         frame.add(panel);
@@ -308,10 +302,10 @@ public class WindowsControl {
                         user = us.get();
                         frame.dispose();
                     } else {
-                        Popup(frame, "账号或密码错误");
+                        MassageBox(frame, "账号或密码错误");
                     }
                 } else {
-                    Popup(frame, "账号或密码错误");
+                    MassageBox(frame, "账号或密码错误");
                 }
             } catch (SQLException e) {
                 System.out.println(e);
@@ -332,11 +326,11 @@ public class WindowsControl {
         JTextField textField_2;
         JTextField textField_3;
         JTextField textField_4;
-        JFrame frame = new cnt();
+        JFrame frame = new JFrame();
         frame.setVisible(true);
         frame.setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\63569\\Desktop\\未命名 -1.png"));
         frame.setTitle("添加书籍");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        // frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setBounds(100, 100, 342, 408);
         JPanel contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -354,7 +348,7 @@ public class WindowsControl {
 
         JComboBox comboBox = new JComboBox();
         comboBox.setFont(new Font("新宋体", Font.PLAIN, 16));
-        comboBox.setModel(new DefaultComboBoxModel(new String[]{"Science", "Education", "History", "Literature"}));
+        comboBox.setModel(new DefaultComboBoxModel(new String[] { "Science", "Education", "History", "Literature" }));
 
         JLabel lblNewLabel_1_1 = new JLabel("数目");
         lblNewLabel_1_1.setFont(new Font("新宋体", Font.PLAIN, 16));
@@ -377,7 +371,7 @@ public class WindowsControl {
         textField_3.setFont(new Font("新宋体", Font.PLAIN, 16));
         textField_3.setColumns(10);
 
-        JLabel lblNewLabel_1_1_2_1 = new JLabel("页数");
+        JLabel lblNewLabel_1_1_2_1 = new JLabel("页码");
         lblNewLabel_1_1_2_1.setFont(new Font("新宋体", Font.PLAIN, 16));
 
         textField_4 = new JTextField();
@@ -399,24 +393,39 @@ public class WindowsControl {
          *
          */
         btnNewButton.addActionListener(arg -> {
-            if (textField.getText().equals("")) {
-                Popup(frame, "书名不得为空");
+            if (textField.getText().length() == 0) {
+                MassageBox(frame, "书名不得为空");
+                return;
+            }
+            if (textField_2.getText().length() == 0) {
+                MassageBox(frame, "作者不得为空");
+                return;
             }
 
-            if (textField_1.getText().equals("")) {
-                Popup(frame, "书名不得为空");
+            if (textField_1.getText().length() == 0) {
+                MassageBox(frame, "数目不得为空");
+                return;
             }
 
-            if (textField_1.getText().equals("")) {
-                Popup(frame, "书名不得为空");
+            if (textField_3.getText().length() == 0) {
+                MassageBox(frame, "价格不得为空");
+                return;
             }
 
-            if (textField_1.getText().equals("")) {
-                Popup(frame, "书名不得为空");
+            if (textField_4.getText().length() == 0) {
+                MassageBox(frame, "页码不得为空");
+                return;
             }
-
-            if (textField_1.getText().equals("")) {
-                Popup(frame, "书名不得为空");
+            try {
+                Integer.valueOf(textField_1.getText());
+                DbManager.getInstance().addBook(Enum.valueOf(BookType.class, comboBox.getToolTipText()),
+                        textField.getText(), Integer.valueOf(textField_1.getText()), textField_2.getText(),
+                        new BigDecimal(textField_3.getText()), Integer.valueOf(textField_4.getText()));
+            } catch (NumberFormatException e) {
+                MassageBox(frame, "输入的数量或者页码或者价格并不是合格数字");
+                e.printStackTrace();
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         });
         /*
@@ -494,6 +503,107 @@ public class WindowsControl {
                 .addComponent(btnNewButton, GroupLayout.PREFERRED_SIZE, 126, GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(20, Short.MAX_VALUE)));
         contentPane.setLayout(gl_contentPane);
+        frame.setVisible(true);
     }
 
+    private static void Start() {
+
+        JPanel contentPane;
+        JFrame frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setBounds(100, 100, 354, 480);
+        contentPane = new JPanel();
+        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+        frame.setContentPane(contentPane);
+
+        JLabel lblsb = new JLabel();
+        lblsb.setText("欢迎你" + usname);
+        lblsb.setHorizontalAlignment(SwingConstants.CENTER);
+        lblsb.setFont(new Font("宋体", Font.PLAIN, 20));
+
+        JButton ListBooks = new JButton("搜索书本");
+        ListBooks.setFont(nf);
+        ListBooks.addActionListener(arg -> {
+            ListBooks();
+        });
+
+        JButton ConsultBooks = new JButton("查阅管理");
+        ConsultBooks.setFont(nf);
+        ConsultBooks.addActionListener(arg -> {
+        });
+
+        JButton BookDelete = new JButton("???");
+        BookDelete.setEnabled(false);
+        if (us == UserPermission.USER) {
+            BookDelete.setEnabled(false);
+        }
+        BookDelete.setFont(nf);
+
+        JButton AddBooks = new JButton("增加书本");
+        if (us == UserPermission.USER) {
+            AddBooks.setEnabled(false);
+        }
+        AddBooks.setFont(nf);
+        AddBooks.addActionListener(args -> {
+            AddNewBook();
+            // frame.dispose();
+        });
+
+        JButton ModifyBook = new JButton("修改内容 ");
+        if (us == UserPermission.USER) {
+            ModifyBook.setEnabled(false);
+        }
+        ModifyBook.setFont(nf);
+
+        JButton Borrowing = new JButton("退出登录");
+        Borrowing.setFont(nf);
+        Borrowing.addActionListener(args -> {
+            Login();
+            frame.dispose();
+        });
+
+        JButton LogOut = new JButton("关闭系统");
+        LogOut.setFont(nf);
+        LogOut.addActionListener(args -> {
+            System.exit(0);
+            frame.dispose();
+        });
+
+        GroupLayout gl_contentPane = new GroupLayout(contentPane);
+        gl_contentPane.setHorizontalGroup(gl_contentPane.createParallelGroup(Alignment.LEADING).addGroup(gl_contentPane
+                .createSequentialGroup()
+                .addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
+                        .addGroup(gl_contentPane.createSequentialGroup().addGap(79).addComponent(lblsb,
+                                GroupLayout.PREFERRED_SIZE, 152, GroupLayout.PREFERRED_SIZE))
+                        .addGroup(gl_contentPane.createSequentialGroup().addGap(109).addGroup(gl_contentPane
+                                .createParallelGroup(Alignment.LEADING)
+                                .addComponent(ConsultBooks, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(BookDelete, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(AddBooks, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(ModifyBook, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(Borrowing, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(LogOut, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(ListBooks, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(99, Short.MAX_VALUE)));
+        gl_contentPane.setVerticalGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
+                .addGroup(gl_contentPane.createSequentialGroup().addContainerGap()
+                        .addComponent(lblsb, GroupLayout.PREFERRED_SIZE, 28, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(ListBooks, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(ConsultBooks, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(BookDelete, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(AddBooks, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(ModifyBook, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(Borrowing, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(ComponentPlacement.UNRELATED)
+                        .addComponent(LogOut, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(123, Short.MAX_VALUE)));
+        contentPane.setLayout(gl_contentPane);
+        frame.setVisible(true);
+    }
 }
