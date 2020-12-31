@@ -2,6 +2,7 @@ package cn.edu.jmu.chengyi.superlibrary.ui;
 
 import java.awt.Font;
 import java.math.BigDecimal;
+import java.net.InetAddress;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +64,7 @@ public class WindowsControl {
     public static void main(String[] args) {
         // Buffer.main(null);
         // SetBooks(Book.NoonBook);
+        // Login();
         Start();
         // ListBooks();
         // AddNewBook();
@@ -663,25 +665,64 @@ public class WindowsControl {
                 return;
             }
             if (bookAuthor.getText().length() == 0) {
-                MassageBox(frame, "书名不得为空");
+                MassageBox(frame, "作者不得为空");
                 return;
             }
             if (bookCount.getText().length() == 0) {
-                MassageBox(frame, "书名不得为空");
+                MassageBox(frame, "数目不得为空");
                 return;
             }
             if (bookPrice.getText().length() == 0) {
-                MassageBox(frame, "书名不得为空");
+                MassageBox(frame, "价格不得为空");
                 return;
             }
             if (bookPage.getText().length() == 0) {
-                MassageBox(frame, "书名不得为空");
+                MassageBox(frame, "页码不得为空");
                 return;
             }
-            if (BookName.getText().length() == 0) {
-                MassageBox(frame, "书名不得为空");
-                return;
+            if (BookName.getText().equals(String.valueOf(bk.getName()))) {
+                try {
+                    DbManager.getInstance().setBook(bk, DbManager.TAG_NAME, BookName.getText());
+                } catch (NumberFormatException | SQLException e) {
+                    e.printStackTrace();
+                }
             }
+            if (bookAuthor.getText().equals(String.valueOf(bk.getAuthor()))) {
+                try {
+                    DbManager.getInstance().setBook(bk, DbManager.TAG_AUTHOR, bookAuthor.getText());
+                } catch (NumberFormatException | SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (bookCount.getText().equals(String.valueOf(bk.getCount()))) {
+                try {
+                    DbManager.getInstance().setBook(bk, DbManager.TAG_COUNT,
+                            (int) Integer.valueOf(bookCount.getText()));
+                } catch (NumberFormatException | SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (bookPrice.getText().equals(String.valueOf(bk.getPrice()))) {
+                try {
+                    DbManager.getInstance().setBook(bk, DbManager.TAG_PRICE,
+                            (int) Integer.valueOf(bookPrice.getText()));
+                } catch (NumberFormatException | SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (bookPage.getText().equals(String.valueOf(bk.getPage()))) {
+                try {
+                    DbManager.getInstance().setBook(bk, DbManager.TAG_PAGE, (int) Integer.valueOf(bookPage.getText()));
+                } catch (NumberFormatException | SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            // if (BookName.getText().length() == 0) {
+            // MassageBox(frame, "书名不得为空");
+            // return;
+            // }
+
         });
 
         frame.setVisible(true);
