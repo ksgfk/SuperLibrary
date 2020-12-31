@@ -11,6 +11,9 @@ import javax.swing.*;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.EmptyBorder;
+import javax.xml.crypto.KeySelector.Purpose;
+
+import org.w3c.dom.Text;
 
 import java.awt.*;
 
@@ -59,6 +62,7 @@ public class WindowsControl {
 
     public static void main(String[] args) {
         // Buffer.main(null);
+        // SetBooks(Book.NoonBook);
         Start();
         // ListBooks();
         // AddNewBook();
@@ -140,6 +144,14 @@ public class WindowsControl {
         FindBook.setBounds(400, 300, 100, 50);
         contentPane.add(FindBook);
 
+        JButton SetBook = new JButton("修改选中书籍");
+        SetBook.setFont(nf);
+        SetBook.setBounds(240, 400, 120, 50);
+        contentPane.add(SetBook);
+
+        SetBook.addActionListener(args -> {
+            SetBooks(list.getSelectedValue().bk);
+        });
         FindBook.addActionListener(arg -> {
             Find(list);
         });
@@ -175,6 +187,7 @@ public class WindowsControl {
         // up.setEnabled(false);
 
         JOptionPane.showConfirmDialog(up, output, output, -1, 2);
+
         /*
          * JFrame frame = new JFrame(output + "\n" + output); frame.setSize(210, 160);
          * // frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); JPanel panel = new
@@ -511,99 +524,166 @@ public class WindowsControl {
         JPanel contentPane;
         JFrame frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setBounds(100, 100, 354, 480);
+        frame.setBounds(100, 100, 297, 323);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         frame.setContentPane(contentPane);
 
-        JLabel lblsb = new JLabel();
-        lblsb.setText("欢迎你" + usname);
-        lblsb.setHorizontalAlignment(SwingConstants.CENTER);
-        lblsb.setFont(new Font("宋体", Font.PLAIN, 20));
+        JLabel label = new JLabel("欢迎你");
+        label.setFont(new Font("宋体", Font.PLAIN, 30));
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setBounds(10, 10, 261, 62);
+        contentPane.add(label);
 
-        JButton ListBooks = new JButton("搜索书本");
-        ListBooks.setFont(nf);
-        ListBooks.addActionListener(arg -> {
+        JButton btnNewButton = new JButton("书籍");
+        btnNewButton.setFont(new Font("宋体", Font.PLAIN, 16));
+        btnNewButton.setBounds(92, 72, 101, 37);
+        contentPane.add(btnNewButton);
+        btnNewButton.addActionListener(args -> {
             ListBooks();
         });
 
-        JButton ConsultBooks = new JButton("查阅管理");
-        ConsultBooks.setFont(nf);
-        ConsultBooks.addActionListener(arg -> {
-        });
-
-        JButton BookDelete = new JButton("???");
-        BookDelete.setEnabled(false);
-        if (us == UserPermission.USER) {
-            BookDelete.setEnabled(false);
-        }
-        BookDelete.setFont(nf);
-
-        JButton AddBooks = new JButton("增加书本");
-        if (us == UserPermission.USER) {
-            AddBooks.setEnabled(false);
-        }
-        AddBooks.setFont(nf);
-        AddBooks.addActionListener(args -> {
-            AddNewBook();
-            // frame.dispose();
-        });
-
-        JButton ModifyBook = new JButton("修改内容 ");
-        if (us == UserPermission.USER) {
-            ModifyBook.setEnabled(false);
-        }
-        ModifyBook.setFont(nf);
+        JButton btnNewButton_1 = new JButton("查阅管理");
+        btnNewButton_1.setFont(new Font("宋体", Font.PLAIN, 16));
+        btnNewButton_1.setBounds(92, 119, 101, 37);
+        contentPane.add(btnNewButton_1);
 
         JButton Borrowing = new JButton("退出登录");
-        Borrowing.setFont(nf);
+        Borrowing.setFont(new Font("宋体", Font.PLAIN, 16));
+        Borrowing.setBounds(92, 167, 101, 37);
+        contentPane.add(Borrowing);
+
+        JButton LogOut = new JButton("关闭系统");
+        LogOut.setFont(new Font("宋体", Font.PLAIN, 16));
+        LogOut.setBounds(92, 214, 101, 37);
+        contentPane.add(LogOut);
+
         Borrowing.addActionListener(args -> {
             Login();
             frame.dispose();
         });
 
-        JButton LogOut = new JButton("关闭系统");
-        LogOut.setFont(nf);
         LogOut.addActionListener(args -> {
             System.exit(0);
             frame.dispose();
         });
 
-        GroupLayout gl_contentPane = new GroupLayout(contentPane);
-        gl_contentPane.setHorizontalGroup(gl_contentPane.createParallelGroup(Alignment.LEADING).addGroup(gl_contentPane
-                .createSequentialGroup()
-                .addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
-                        .addGroup(gl_contentPane.createSequentialGroup().addGap(79).addComponent(lblsb,
-                                GroupLayout.PREFERRED_SIZE, 152, GroupLayout.PREFERRED_SIZE))
-                        .addGroup(gl_contentPane.createSequentialGroup().addGap(109).addGroup(gl_contentPane
-                                .createParallelGroup(Alignment.LEADING)
-                                .addComponent(ConsultBooks, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(BookDelete, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(AddBooks, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(ModifyBook, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(Borrowing, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(LogOut, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(ListBooks, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(99, Short.MAX_VALUE)));
-        gl_contentPane.setVerticalGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
-                .addGroup(gl_contentPane.createSequentialGroup().addContainerGap()
-                        .addComponent(lblsb, GroupLayout.PREFERRED_SIZE, 28, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(ListBooks, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(ConsultBooks, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(BookDelete, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(AddBooks, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(ModifyBook, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(Borrowing, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(ComponentPlacement.UNRELATED)
-                        .addComponent(LogOut, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(123, Short.MAX_VALUE)));
-        contentPane.setLayout(gl_contentPane);
+        contentPane.setLayout(null);
+        frame.setVisible(true);
+    }
+
+    public static void SetBooks(Book bk) {
+        JFrame frame = new JFrame();
+        JPanel contentPane;
+
+        // setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setBounds(100, 100, 312, 371);
+        contentPane = new JPanel();
+        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+        contentPane.setLayout(new BorderLayout(0, 0));
+        frame.getContentPane().setLayout(null);
+
+        JLabel lblNewLabel = new JLabel("书名");
+        lblNewLabel.setFont(new Font("宋体", Font.PLAIN, 16));
+        lblNewLabel.setBounds(37, 29, 48, 28);
+        frame.getContentPane().add(lblNewLabel);
+
+        JLabel lblNewLabel_1 = new JLabel("作者");
+        lblNewLabel_1.setFont(new Font("宋体", Font.PLAIN, 16));
+        lblNewLabel_1.setBounds(37, 66, 48, 28);
+        frame.getContentPane().add(lblNewLabel_1);
+
+        JLabel lblNewLabel_1_1 = new JLabel("类型");
+        lblNewLabel_1_1.setFont(new Font("宋体", Font.PLAIN, 16));
+        lblNewLabel_1_1.setBounds(37, 104, 48, 28);
+        frame.getContentPane().add(lblNewLabel_1_1);
+
+        JLabel lblNewLabel_1_1_1 = new JLabel("数目");
+        lblNewLabel_1_1_1.setFont(new Font("宋体", Font.PLAIN, 16));
+        lblNewLabel_1_1_1.setBounds(37, 142, 48, 28);
+        frame.getContentPane().add(lblNewLabel_1_1_1);
+
+        JLabel lblNewLabel_1_1_1_1 = new JLabel("价格");
+        lblNewLabel_1_1_1_1.setFont(new Font("宋体", Font.PLAIN, 16));
+        lblNewLabel_1_1_1_1.setBounds(37, 180, 48, 28);
+        frame.getContentPane().add(lblNewLabel_1_1_1_1);
+
+        JLabel lblNewLabel_1_1_1_1_1 = new JLabel("页码");
+        lblNewLabel_1_1_1_1_1.setFont(new Font("宋体", Font.PLAIN, 16));
+        lblNewLabel_1_1_1_1_1.setBounds(37, 218, 48, 28);
+        frame.getContentPane().add(lblNewLabel_1_1_1_1_1);
+
+        JTextPane BookName = new JTextPane();
+        BookName.setBounds(73, 29, 200, 28);
+        frame.getContentPane().add(BookName);
+        BookName.setText(bk.getName());
+
+        JTextPane bookAuthor = new JTextPane();
+        bookAuthor.setBounds(73, 67, 200, 28);
+        frame.getContentPane().add(bookAuthor);
+        bookAuthor.setText(bk.getAuthor());
+
+        JComboBox bookType = new JComboBox();
+        bookType.setBounds(73, 108, 169, 23);
+        bookType.setModel(new DefaultComboBoxModel(new String[] { "Science", "Education", "History", "Literature" }));
+        int ind = 0;
+        if (BookType.Science.name().equals(bk.getType().name()))
+            ind = 0;
+        if (BookType.Education.name().equals(bk.getType().name()))
+            ind = 1;
+        if (BookType.History.name().equals(bk.getType().name()))
+            ind = 2;
+        if (BookType.Literature.name().equals(bk.getType().name()))
+            ind = 3;
+        bookType.setSelectedIndex(ind);
+        frame.getContentPane().add(bookType);
+
+        JTextPane bookCount = new JTextPane();
+        bookCount.setBounds(73, 142, 200, 28);
+        frame.getContentPane().add(bookCount);
+        bookCount.setText(String.valueOf(bk.getCount()));
+
+        JTextPane bookPrice = new JTextPane();
+        bookPrice.setBounds(73, 180, 200, 28);
+        frame.getContentPane().add(bookPrice);
+        bookPrice.setText(String.valueOf(bk.getPrice()));
+
+        JTextPane bookPage = new JTextPane();
+        bookPage.setBounds(73, 218, 200, 28);
+        frame.getContentPane().add(bookPage);
+        bookPage.setText(String.valueOf(bk.getPage()));
+
+        JButton btnNewButton = new JButton("确认修改");
+        btnNewButton.setBounds(98, 273, 93, 23);
+        frame.getContentPane().add(btnNewButton);
+
+        btnNewButton.addActionListener(args -> {
+            if (BookName.getText().length() == 0) {
+                MassageBox(frame, "书名不得为空");
+                return;
+            }
+            if (bookAuthor.getText().length() == 0) {
+                MassageBox(frame, "书名不得为空");
+                return;
+            }
+            if (bookCount.getText().length() == 0) {
+                MassageBox(frame, "书名不得为空");
+                return;
+            }
+            if (bookPrice.getText().length() == 0) {
+                MassageBox(frame, "书名不得为空");
+                return;
+            }
+            if (bookPage.getText().length() == 0) {
+                MassageBox(frame, "书名不得为空");
+                return;
+            }
+            if (BookName.getText().length() == 0) {
+                MassageBox(frame, "书名不得为空");
+                return;
+            }
+        });
+
         frame.setVisible(true);
     }
 }
