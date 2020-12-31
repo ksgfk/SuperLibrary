@@ -42,7 +42,8 @@ public class Main {
 //		System.out.println(manager.getUser("kabi0210"));
 //		WindowsControl.main(null);
 
-		UIManager.getInstance();
+		WindowsControl.main(null);
+//		UIManager.getInstance();
 
 //		manager.closeConnect();
 	}

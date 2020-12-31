@@ -1,28 +1,17 @@
 package cn.edu.jmu.chengyi.superlibrary.ui;
 
-import java.awt.Font;
-import java.math.BigDecimal;
-import java.net.InetAddress;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import cn.edu.jmu.chengyi.superlibrary.*;
 
 import javax.swing.*;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.EmptyBorder;
-import javax.xml.crypto.KeySelector.Purpose;
-
-import org.w3c.dom.Text;
-
 import java.awt.*;
-
-import cn.edu.jmu.chengyi.superlibrary.Book;
-import cn.edu.jmu.chengyi.superlibrary.BookType;
-import cn.edu.jmu.chengyi.superlibrary.DbManager;
-import cn.edu.jmu.chengyi.superlibrary.User;
-import cn.edu.jmu.chengyi.superlibrary.UserPermission;
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 class ShowBook {
     Book bk;
@@ -64,8 +53,8 @@ public class WindowsControl {
     public static void main(String[] args) {
         // Buffer.main(null);
         // SetBooks(Book.NoonBook);
-        // Login();
-        Start();
+        Login();
+//        Start();
         // ListBooks();
         // AddNewBook();
         // ConsoleControl frame = new ConsoleControl();
@@ -93,7 +82,7 @@ public class WindowsControl {
         scroll.setBounds(8, 8, 310, 220);
         contentPane.add(scroll);
 
-        list.setListData(new ShowBook[] { new ShowBook(Book.NoonBook), new ShowBook(Book.NoonBook) });
+        list.setListData(new ShowBook[]{new ShowBook(Book.NoonBook), new ShowBook(Book.NoonBook)});
 
         JLabel lblNewLabel = new JLabel("书名");
         lblNewLabel.setFont(nf);
@@ -153,21 +142,34 @@ public class WindowsControl {
 
         SetBook.addActionListener(args -> {
             SetBooks(list.getSelectedValue().bk);
+
+            try {
+                BookList = DbManager.getInstance().getAllBooks();
+                list.setListData(BookList.stream().map(ShowBook::new).toArray(ShowBook[]::new));
+                list.setSelectedIndex(0);
+            } catch (SQLException throwables) {
+                System.out.println("系统自动加载失败");
+            }
         });
         FindBook.addActionListener(arg -> {
             Find(list);
         });
 
         list.addListSelectionListener(args -> {
-            lbName.setText(list.getSelectedValue().bk.getName());
-            lbAuthor.setText(list.getSelectedValue().bk.getAuthor());
-            lbCount.setText(String.valueOf(list.getSelectedValue().bk.getCount()));
-            lbType.setText(String.valueOf(list.getSelectedValue().bk.getType()));
+            try {
+                lbName.setText(list.getSelectedValue().bk.getName());
+                lbAuthor.setText(list.getSelectedValue().bk.getAuthor());
+                lbCount.setText(String.valueOf(list.getSelectedValue().bk.getCount()));
+                lbType.setText(String.valueOf(list.getSelectedValue().bk.getType()));
+            } catch (NullPointerException e) {
+                System.out.println("系统加载中");
+            }
         });
         btnNewButton_1.addActionListener(arg -> {
             try {
                 BookList = DbManager.getInstance().getAllBooks();
                 list.setListData(BookList.stream().map(ShowBook::new).toArray(ShowBook[]::new));
+                list.setSelectedIndex(0);
             } catch (SQLException e) {
                 System.out.println(e);
             }
@@ -186,22 +188,7 @@ public class WindowsControl {
     }
 
     public static void MassageBox(JFrame up, String output) {
-        // up.setEnabled(false);
-
         JOptionPane.showConfirmDialog(up, output, output, -1, 2);
-
-        /*
-         * JFrame frame = new JFrame(output + "\n" + output); frame.setSize(210, 160);
-         * // frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); JPanel panel = new
-         * JPanel(); frame.add(panel); panel.setLayout(null);
-         * 
-         * JButton yes = new JButton(output + "\n\n\n\n" + output);
-         * yes.setHorizontalAlignment(SwingConstants.CENTER); yes.setFont(new Font("宋体",
-         * Font.PLAIN, 15)); yes.setBounds(0, 0, 200, 150); panel.add(yes);
-         * 
-         * yes.addActionListener(arg -> { // up.setEnabled(true); frame.dispose(); });
-         * frame.setVisible(true);
-         */
     }
 
     public static void FindSuccess(JFrame frame) {
@@ -313,7 +300,7 @@ public class WindowsControl {
                 Optional<User> us = DbManager.getInstance().getUser(userText.getText());//
                 if (us.isPresent()) {
                     if (us.get().getPwd().equals(DbManager.SHA1(String.valueOf(passwordText.getPassword())))) {
-                        ListBooks();
+                        Start();
                         user = us.get();
                         frame.dispose();
                     } else {
@@ -363,7 +350,7 @@ public class WindowsControl {
 
         JComboBox comboBox = new JComboBox();
         comboBox.setFont(new Font("新宋体", Font.PLAIN, 16));
-        comboBox.setModel(new DefaultComboBoxModel(new String[] { "Science", "Education", "History", "Literature" }));
+        comboBox.setModel(new DefaultComboBoxModel(new String[]{"Science", "Education", "History", "Literature"}));
 
         JLabel lblNewLabel_1_1 = new JLabel("数目");
         lblNewLabel_1_1.setFont(new Font("新宋体", Font.PLAIN, 16));
@@ -549,7 +536,9 @@ public class WindowsControl {
         btnNewButton_1.setFont(new Font("宋体", Font.PLAIN, 16));
         btnNewButton_1.setBounds(92, 119, 101, 37);
         contentPane.add(btnNewButton_1);
-
+        btnNewButton_1.addActionListener(args -> {
+            UIManager.getInstance();
+        });
         JButton Borrowing = new JButton("退出登录");
         Borrowing.setFont(new Font("宋体", Font.PLAIN, 16));
         Borrowing.setBounds(92, 167, 101, 37);
@@ -625,9 +614,12 @@ public class WindowsControl {
         frame.getContentPane().add(bookAuthor);
         bookAuthor.setText(bk.getAuthor());
 
-        JComboBox bookType = new JComboBox();
+        JComboBox<BookType> bookType = new JComboBox<>();
         bookType.setBounds(73, 108, 169, 23);
-        bookType.setModel(new DefaultComboBoxModel(new String[] { "Science", "Education", "History", "Literature" }));
+        for (BookType t : BookType.class.getEnumConstants()) {
+            bookType.addItem(t);
+        }
+//        bookType.setModel(new DefaultComboBoxModel(new String[]{"Science", "Education", "History", "Literature"}));
         int ind = 0;
         if (BookType.Science.name().equals(bk.getType().name()))
             ind = 0;
@@ -680,44 +672,63 @@ public class WindowsControl {
                 MassageBox(frame, "页码不得为空");
                 return;
             }
-            if (BookName.getText().equals(String.valueOf(bk.getName()))) {
-                try {
-                    DbManager.getInstance().setBook(bk, DbManager.TAG_NAME, BookName.getText());
-                } catch (NumberFormatException | SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (bookAuthor.getText().equals(String.valueOf(bk.getAuthor()))) {
-                try {
-                    DbManager.getInstance().setBook(bk, DbManager.TAG_AUTHOR, bookAuthor.getText());
-                } catch (NumberFormatException | SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (bookCount.getText().equals(String.valueOf(bk.getCount()))) {
-                try {
-                    DbManager.getInstance().setBook(bk, DbManager.TAG_COUNT,
-                            (int) Integer.valueOf(bookCount.getText()));
-                } catch (NumberFormatException | SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (bookPrice.getText().equals(String.valueOf(bk.getPrice()))) {
-                try {
-                    DbManager.getInstance().setBook(bk, DbManager.TAG_PRICE,
-                            (int) Integer.valueOf(bookPrice.getText()));
-                } catch (NumberFormatException | SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (bookPage.getText().equals(String.valueOf(bk.getPage()))) {
-                try {
-                    DbManager.getInstance().setBook(bk, DbManager.TAG_PAGE, (int) Integer.valueOf(bookPage.getText()));
-                } catch (NumberFormatException | SQLException e) {
-                    e.printStackTrace();
-                }
+
+
+//            if (BookName.getText().equals(String.valueOf(bk.getName()))) {
+//                try {
+//                    DbManager.getInstance().setBook(bk, DbManager.TAG_NAME, BookName.getText());
+//                } catch (NumberFormatException | SQLException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            if (bookAuthor.getText().equals(String.valueOf(bk.getAuthor()))) {
+//                try {
+//                    DbManager.getInstance().setBook(bk, DbManager.TAG_AUTHOR, bookAuthor.getText());
+//                } catch (NumberFormatException | SQLException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            if (bookCount.getText().equals(String.valueOf(bk.getCount()))) {
+//                try {
+//                    DbManager.getInstance().setBook(bk, DbManager.TAG_COUNT,
+//                            (int) Integer.valueOf(bookCount.getText()));
+//                } catch (NumberFormatException | SQLException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            if (bookPrice.getText().equals(String.valueOf(bk.getPrice()))) {
+//                try {
+//                    DbManager.getInstance().setBook(bk, DbManager.TAG_PRICE,
+//                            (int) Integer.valueOf(bookPrice.getText()));
+//                } catch (NumberFormatException | SQLException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            if (bookPage.getText().equals(String.valueOf(bk.getPage()))) {
+//                try {
+//                    DbManager.getInstance().setBook(bk, DbManager.TAG_PAGE, (int) Integer.valueOf(bookPage.getText()));
+//                } catch (NumberFormatException | SQLException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+            BookProperty property = new BookProperty();
+
+            property.setName(BookName.getText());
+            property.setType((BookType) bookType.getSelectedItem());
+            property.setAuthor(bookAuthor.getText());
+            property.setCount(Integer.parseInt(bookCount.getText()));
+            property.setPrice(new BigDecimal(bookPrice.getText()));
+            property.setPage(Integer.parseInt(bookPage.getText()));
+
+            try {
+                DbManager.getInstance().setBook(bk, property);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return;
             }
 
+            MassageBox(frame, "修改成功");
+            frame.dispose();
             // if (BookName.getText().length() == 0) {
             // MassageBox(frame, "书名不得为空");
             // return;

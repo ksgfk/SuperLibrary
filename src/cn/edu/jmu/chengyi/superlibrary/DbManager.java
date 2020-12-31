@@ -107,6 +107,7 @@ public class DbManager {
     private PreparedStatement getBookName;
     private PreparedStatement getBookAuth;
     private PreparedStatement getBookNameAuth;
+    private PreparedStatement setBook;
     private PreparedStatement getUsr;
     private PreparedStatement getUsrId;
     private PreparedStatement getUsrName;
@@ -252,9 +253,9 @@ public class DbManager {
         return books;
     }
 
+    @Deprecated
     public synchronized Book setBook(Book book, String tag, Object value) throws SQLException {
-        if (tag.equals(TAG_ID))
-            throw new IllegalArgumentException("Can't update id");
+        if (tag.equals(TAG_ID)) throw new IllegalArgumentException("Can't update id");
         PreparedStatement prep = connect.prepareStatement(sqlUpdate(BOOK_TABLE, tag));
         if (value instanceof Integer) {
             prep.setInt(1, (int) value);
@@ -270,7 +271,26 @@ public class DbManager {
         if (result != 1) {
             throw new IllegalStateException("unknown error");
         }
-        return getBook(book.getId()).get();
+        return getBook(book.getId()).orElseThrow();
+    }
+
+    public synchronized void setBook(Book book, BookProperty property) throws SQLException {
+        setBook = checkStatement(setBook, () -> String.format("update %s set %s=?,%s=?,%s=?,%s=?,%s=?,%s=? where id=?",
+                BOOK_TABLE,
+                TAG_TYPE,
+                TAG_NAME,
+                TAG_COUNT,
+                TAG_AUTHOR,
+                TAG_PRICE,
+                TAG_PAGE));
+        setBook.setString(1, property.getType().name());
+        setBook.setString(2, property.getName());
+        setBook.setInt(3, property.getCount());
+        setBook.setString(4, property.getAuthor());
+        setBook.setBigDecimal(5, property.getPrice());
+        setBook.setInt(6, property.getPage());
+        setBook.setInt(7, book.getId());
+        setBook.execute();
     }
 
     public synchronized boolean hasUser(int id) throws SQLException {
@@ -340,9 +360,9 @@ public class DbManager {
     }
 
     public synchronized void removeUser(User user) throws SQLException {
-        User u = getUser(user.getId()).get();
+        User u = getUser(user.getId()).orElseThrow();
         if (u.getPermission() == UserPermission.ADMIN) {
-            throw new IllegalArgumentException("You don't have permission to remove admin");
+            throw new IllegalArgumentException("You don't have permission to remove administrators");
         }
         rmUserId = checkStatement(rmUserId, () -> sqlRemove(USER_TABLE, TAG_ID));
         rmUserId.setInt(1, u.getId());
@@ -351,15 +371,13 @@ public class DbManager {
 
     public synchronized void removeUser(int id) throws SQLException {
         Optional<User> u = getUser(id);
-        if (!u.isPresent())
-            throw new IllegalArgumentException("no user id" + id);
+        if (u.isEmpty()) throw new IllegalArgumentException("no user id" + id);
         removeUser(u.get());
     }
 
     public synchronized void removeUser(String name) throws SQLException {
         Optional<User> u = getUser(name);
-        if (!u.isPresent())
-            throw new IllegalArgumentException("no user id" + name);
+        if (u.isEmpty()) throw new IllegalArgumentException("no user id" + name);
         removeUser(u.get());
     }
 
