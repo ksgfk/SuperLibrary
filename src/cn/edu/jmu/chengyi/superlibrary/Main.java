@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import cn.edu.jmu.chengyi.superlibrary.ui.UIManager;
 import cn.edu.jmu.chengyi.superlibrary.ui.WindowsControl;
 
 public class Main {
@@ -39,7 +40,9 @@ public class Main {
 //		manager.addUser("kabi0210", "2333", DbManager::SHA1);
 //		System.out.println(DbManager.SHA1("2333"));
 //		System.out.println(manager.getUser("kabi0210"));
-		WindowsControl.main(null);
+//		WindowsControl.main(null);
+
+		UIManager.getInstance();
 
 //		manager.closeConnect();
 	}

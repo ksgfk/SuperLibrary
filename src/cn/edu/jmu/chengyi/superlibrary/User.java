@@ -1,6 +1,8 @@
 package cn.edu.jmu.chengyi.superlibrary;
 
 public final class User {
+    public static final User EMPTY = new User(-1, "", "", UserPermission.USER);
+
     private final int id;
     private final String name;
     private final String pwd;

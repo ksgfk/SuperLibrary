@@ -107,16 +107,16 @@ public class DbManager {
     private PreparedStatement getBookName;
     private PreparedStatement getBookAuth;
     private PreparedStatement getBookNameAuth;
+    private PreparedStatement getUsr;
     private PreparedStatement getUsrId;
     private PreparedStatement getUsrName;
     private PreparedStatement addUsr;
     private PreparedStatement rmUserId;
+    private PreparedStatement setUsr;
     private PreparedStatement addLog;
     private PreparedStatement getLogId;
     private PreparedStatement getLogBk;
     private PreparedStatement setLogRt;
-
-    private static final Object LOCK = new Object();
 
     private DbManager() {
         try {
@@ -127,7 +127,7 @@ public class DbManager {
         }
     }
 
-    public void createConnect(String username, String password) {
+    public synchronized void createConnect(String username, String password) {
         if (connect != null)
             throw new IllegalStateException("DB Connect has be created");
         try {
@@ -138,7 +138,7 @@ public class DbManager {
         }
     }
 
-    public void closeConnect() {
+    public synchronized void closeConnect() {
         if (connect == null)
             throw new IllegalStateException("DB Connect hasn't be created");
         try {
@@ -149,17 +149,16 @@ public class DbManager {
         }
     }
 
-    private PreparedStatement checkStatement(PreparedStatement prep, Supplier<String> getSql) throws SQLException {
+    private synchronized PreparedStatement checkStatement(PreparedStatement prep, Supplier<String> getSql) throws SQLException {
+        if (connect == null) throw new IllegalStateException("未与SQL建立连接");
         if (prep == null || prep.isClosed()) {
-            synchronized (LOCK) {
-                return connect.prepareStatement(getSql.get());
-            }
+            return connect.prepareStatement(getSql.get());
         } else {
             return prep;
         }
     }
 
-    public void addBook(BookType type, String name, int count, String author, BigDecimal price, int page)
+    public synchronized void addBook(BookType type, String name, int count, String author, BigDecimal price, int page)
             throws SQLException {
         addBook = checkStatement(addBook, () -> SQL_ADD_BOOK);
         addBook.setString(1, type.name());
@@ -174,37 +173,37 @@ public class DbManager {
         }
     }
 
-    public void removeBook(int id) throws SQLException {
+    public synchronized void removeBook(int id) throws SQLException {
         rmBookId = checkStatement(rmBookId, () -> sqlRemove(BOOK_TABLE, TAG_ID));
         rmBookId.setInt(1, id);
         removeBook(rmBookId);
     }
 
-    public void removeBook(String name) throws SQLException {
+    public synchronized void removeBook(String name) throws SQLException {
         rmBookName = checkStatement(rmBookName, () -> sqlRemove(BOOK_TABLE, TAG_NAME));
         rmBookName.setString(1, name);
         removeBook(rmBookName);
     }
 
-    public void removeBook(String name, String author) throws SQLException {
-        rmBookNameAuth = checkStatement(rmBookName, () -> sqlRemove(BOOK_TABLE, TAG_NAME, TAG_AUTHOR));
+    public synchronized void removeBook(String name, String author) throws SQLException {
+        rmBookNameAuth = checkStatement(rmBookNameAuth, () -> sqlRemove(BOOK_TABLE, TAG_NAME, TAG_AUTHOR));
         rmBookNameAuth.setString(1, name);
         rmBookNameAuth.setString(2, author);
         removeBook(rmBookNameAuth);
     }
 
-    private void removeBook(PreparedStatement prep) throws SQLException {
+    private synchronized void removeBook(PreparedStatement prep) throws SQLException {
         boolean result = prep.execute();
         if (result) {
             throw new IllegalStateException("unknown error");
         }
     }
 
-    public boolean hasBook(int id) throws SQLException {
+    public synchronized boolean hasBook(int id) throws SQLException {
         return getBook(id).isPresent();
     }
 
-    public Optional<Book> getBook(int id) throws SQLException {
+    public synchronized Optional<Book> getBook(int id) throws SQLException {
         getBookId = checkStatement(getBookId, () -> sqlSelect(BOOK_TABLE, TAG_ID));
         getBookId.setInt(1, id);
         List<Book> result = getBook(getBookId);
@@ -213,31 +212,31 @@ public class DbManager {
         return Optional.of(result.get(0));
     }
 
-    public List<Book> getBooksWithName(String name) throws SQLException {
+    public synchronized List<Book> getBooksWithName(String name) throws SQLException {
         getBookName = checkStatement(getBookName, () -> sqlSelect(BOOK_TABLE, TAG_NAME));
         getBookName.setString(1, name);
         return getBook(getBookName);
     }
 
-    public List<Book> getBooksWithAuthor(String author) throws SQLException {
+    public synchronized List<Book> getBooksWithAuthor(String author) throws SQLException {
         getBookAuth = checkStatement(getBookAuth, () -> sqlSelect(BOOK_TABLE, TAG_AUTHOR));
         getBookAuth.setString(1, author);
         return getBook(getBookAuth);
     }
 
-    public List<Book> getBooksWithNameAndAuthor(String name, String author) throws SQLException {
+    public synchronized List<Book> getBooksWithNameAndAuthor(String name, String author) throws SQLException {
         getBookNameAuth = checkStatement(getBookNameAuth, () -> sqlSelect(BOOK_TABLE, TAG_NAME, TAG_AUTHOR));
         getBookNameAuth.setString(1, name);
         getBookNameAuth.setString(2, author);
         return getBook(getBookNameAuth);
     }
 
-    public List<Book> getAllBooks() throws SQLException {
-        getBooks = checkStatement(addBook, () -> "select * from " + BOOK_TABLE);
+    public synchronized List<Book> getAllBooks() throws SQLException {
+        getBooks = checkStatement(getBooks, () -> "select * from " + BOOK_TABLE);
         return getBook(getBooks);
     }
 
-    private List<Book> getBook(PreparedStatement prep) throws SQLException {
+    private synchronized List<Book> getBook(PreparedStatement prep) throws SQLException {
         ResultSet result = prep.executeQuery();
         List<Book> books = new ArrayList<>();
         while (result.next()) {
@@ -253,7 +252,7 @@ public class DbManager {
         return books;
     }
 
-    public Book setBook(Book book, String tag, Object value) throws SQLException {
+    public synchronized Book setBook(Book book, String tag, Object value) throws SQLException {
         if (tag.equals(TAG_ID))
             throw new IllegalArgumentException("Can't update id");
         PreparedStatement prep = connect.prepareStatement(sqlUpdate(BOOK_TABLE, tag));
@@ -274,11 +273,11 @@ public class DbManager {
         return getBook(book.getId()).get();
     }
 
-    public boolean hasUser(int id) throws SQLException {
+    public synchronized boolean hasUser(int id) throws SQLException {
         return getUser(id).isPresent();
     }
 
-    public boolean hasUser(String name) throws SQLException {
+    public synchronized boolean hasUser(String name) throws SQLException {
         try {
             Optional<User> u = getUser(name);
             return u.isPresent();
@@ -287,13 +286,24 @@ public class DbManager {
         }
     }
 
-    public Optional<User> getUser(int id) throws SQLException {
-        getUsrId = checkStatement(getUsrId, () -> sqlSelect(USER_TABLE, TAG_ID));
-        getUsrId.setInt(1, id);
-        return getUser(getUsrName);
+    public synchronized List<User> getAllUser() throws SQLException {
+        getUsr = checkStatement(getUsr, () -> "select * from " + USER_TABLE);
+        ResultSet set = getUsr.executeQuery();
+        List<User> result = new ArrayList<>();
+        while (set.next()) {
+            result.add(new User(set.getInt(1), set.getString(2), set.getString(3),
+                    Enum.valueOf(UserPermission.class, set.getString(4))));
+        }
+        return result;
     }
 
-    public Optional<User> getUser(String name) throws SQLException {
+    public synchronized Optional<User> getUser(int id) throws SQLException {
+        getUsrId = checkStatement(getUsrId, () -> sqlSelect(USER_TABLE, TAG_ID));
+        getUsrId.setInt(1, id);
+        return getUser(getUsrId);
+    }
+
+    public synchronized Optional<User> getUser(String name) throws SQLException {
         getUsrName = checkStatement(getUsrName, () -> sqlSelect(USER_TABLE, TAG_NAME));
         getUsrName.setString(1, name);
         ResultSet set = getUsrName.executeQuery();
@@ -306,7 +316,7 @@ public class DbManager {
         return Optional.of(u);
     }
 
-    private Optional<User> getUser(PreparedStatement sql) throws SQLException {
+    private synchronized Optional<User> getUser(PreparedStatement sql) throws SQLException {
         ResultSet set = sql.executeQuery();
         if (!set.first())
             return Optional.empty();
@@ -314,12 +324,10 @@ public class DbManager {
                 Enum.valueOf(UserPermission.class, set.getString(4))));
     }
 
-    public boolean addUser(String name, String password, Function<String, String> encry) throws SQLException {
-        if (hasUser(name))
-            return false;
-        String cry = encry.apply(password);
-        if (cry == null)
-            return false;
+    public synchronized boolean addUser(String name, String password, Function<String, String> encry) throws SQLException {
+        if (!name.isEmpty() && hasUser(name)) return false;
+        if (password == null) return false;
+        String cry = password.isEmpty() ? "" : encry.apply(password);
         addUsr = checkStatement(addUsr, () -> SQL_ADD_USER);
         addUsr.setString(1, name);
         addUsr.setString(2, cry);
@@ -331,7 +339,7 @@ public class DbManager {
         return true;
     }
 
-    public void removeUser(User user) throws SQLException {
+    public synchronized void removeUser(User user) throws SQLException {
         User u = getUser(user.getId()).get();
         if (u.getPermission() == UserPermission.ADMIN) {
             throw new IllegalArgumentException("You don't have permission to remove admin");
@@ -341,21 +349,30 @@ public class DbManager {
         rmUserId.execute();
     }
 
-    public void removeUser(int id) throws SQLException {
+    public synchronized void removeUser(int id) throws SQLException {
         Optional<User> u = getUser(id);
         if (!u.isPresent())
             throw new IllegalArgumentException("no user id" + id);
         removeUser(u.get());
     }
 
-    public void removeUser(String name) throws SQLException {
+    public synchronized void removeUser(String name) throws SQLException {
         Optional<User> u = getUser(name);
         if (!u.isPresent())
             throw new IllegalArgumentException("no user id" + name);
         removeUser(u.get());
     }
 
-    public void addBorrowLog(Book book, User user, Date returnTime) throws SQLException {
+    public synchronized void setUser(User user, String name, String pwd, UserPermission pms) throws SQLException {
+        setUsr = checkStatement(setUsr, () -> String.format("update %s set %s=?,%s=?,%s=? where id=?", USER_TABLE, TAG_NAME, TAG_PWD, TAG_PMS));
+        setUsr.setString(1, name);
+        setUsr.setString(2, pwd);
+        setUsr.setString(3, pms.name());
+        setUsr.setInt(4, user.getId());
+        setUsr.execute();
+    }
+
+    public synchronized void addBorrowLog(Book book, User user, Date returnTime) throws SQLException {
         if (!hasBook(book.getId()) || !hasUser(user.getId())) {
             throw new IllegalArgumentException();
         }
@@ -367,19 +384,19 @@ public class DbManager {
         addLog.execute();
     }
 
-    public List<BorrowLog> getBorrowLog(User user) throws SQLException {
+    public synchronized List<BorrowLog> getBorrowLog(User user) throws SQLException {
         getLogId = checkStatement(getLogId, () -> sqlSelect(BORROW_TABLE, TAG_BORROWER_ID));
         getLogId.setInt(1, user.getId());
         return getBorrowLog(getLogId);
     }
 
-    public List<BorrowLog> getBorrowLog(Book book) throws SQLException {
+    public synchronized List<BorrowLog> getBorrowLog(Book book) throws SQLException {
         getLogBk = checkStatement(getLogBk, () -> sqlSelect(BORROW_TABLE, TAG_BOOK_ID));
         getLogBk.setInt(1, book.getId());
         return getBorrowLog(getLogBk);
     }
 
-    private List<BorrowLog> getBorrowLog(PreparedStatement sql) throws SQLException {
+    private synchronized List<BorrowLog> getBorrowLog(PreparedStatement sql) throws SQLException {
         ResultSet set = sql.executeQuery();
         List<BorrowLog> result = new ArrayList<>();
         while (set.next()) {
@@ -389,7 +406,7 @@ public class DbManager {
         return result;
     }
 
-    public void setBookReturn(BorrowLog log, boolean isReturn) throws SQLException {
+    public synchronized void setBookReturn(BorrowLog log, boolean isReturn) throws SQLException {
         setLogRt = checkStatement(setLogRt, () -> sqlUpdate(BORROW_TABLE, TAG_IS_RETURN));
         setLogRt.setBoolean(1, isReturn);
         setLogRt.setInt(2, log.getId());
