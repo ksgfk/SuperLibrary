@@ -26,7 +26,6 @@ class ShowBook {
 }
 
 class LLst extends AbstractListModel<ShowBook> {
-    private static final long serialVersionUID = 1L;
     int size;
 
     LLst() {
@@ -48,24 +47,10 @@ public class WindowsControl {
     static List<Book> books = new ArrayList<Book>();
     public static UserPermission us = UserPermission.ADMIN;
     public static String usname = "DASABI";
-    // private JPanel contentPane;
-
-    public static void main(String[] args) {
-        // Buffer.main(null);
-        // SetBooks(Book.NoonBook);
-        Login();
-//        Start();
-        // ListBooks();
-        // AddNewBook();
-        // ConsoleControl frame = new ConsoleControl();
-    }
 
     private static void ListBooks() {
-        // long serialVersionUID = 1L;
         JFrame frame = new JFrame();
         BookList = new ArrayList<>();
-        BookList.add(Book.NoonBook);
-        // frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setBounds(100, 100, 600, 502);
 
         JPanel contentPane = new JPanel();
@@ -77,12 +62,18 @@ public class WindowsControl {
         JList<ShowBook> list = new JList<ShowBook>();
         list.setFont(nf);
         list.setModel(new LLst());
+        list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
         JScrollPane scroll = new JScrollPane(list);
         scroll.setBounds(8, 8, 310, 220);
         contentPane.add(scroll);
 
-        list.setListData(new ShowBook[]{new ShowBook(Book.NoonBook), new ShowBook(Book.NoonBook)});
+        try {
+            BookList = DbManager.getInstance().getAllBooks();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        list.setListData(BookList.stream().map(ShowBook::new).toArray(ShowBook[]::new));
 
         JLabel lblNewLabel = new JLabel("书名");
         lblNewLabel.setFont(nf);
@@ -120,12 +111,25 @@ public class WindowsControl {
         lbType.setBounds(365, 130, 200, 15);
         contentPane.add(lbType);
 
-        JButton btnNewButton = new JButton("查询！");
+        JButton btnNewButton = new JButton("删除");
         btnNewButton.setFont(nf);
         btnNewButton.setBounds(250, 300, 100, 50);
         contentPane.add(btnNewButton);
+        btnNewButton.addActionListener((args) -> {
+            int index = list.getSelectedIndex();
+            if (index < 0) return;
+            Book b = list.getModel().getElementAt(index).bk;
+            try {
+                DbManager.getInstance().removeBook(b.getId());
+                BookList = DbManager.getInstance().getAllBooks();
+                list.setListData(BookList.stream().map(ShowBook::new).toArray(ShowBook[]::new));
+                list.setSelectedIndex(0);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
 
-        JButton btnNewButton_1 = new JButton("列举书籍");
+        JButton btnNewButton_1 = new JButton("刷新");
         btnNewButton_1.setFont(nf);
         btnNewButton_1.setBounds(100, 300, 100, 50);
         contentPane.add(btnNewButton_1);
@@ -137,12 +141,17 @@ public class WindowsControl {
 
         JButton SetBook = new JButton("修改选中书籍");
         SetBook.setFont(nf);
-        SetBook.setBounds(240, 400, 120, 50);
+        SetBook.setBounds(120, 400, 120, 50);
         contentPane.add(SetBook);
+
+        JButton addBook = new JButton("添加书籍");
+        addBook.setFont(nf);
+        addBook.setBounds(360, 400, 120, 50);
+        contentPane.add(addBook);
+        addBook.addActionListener((args) -> AddNewBook());
 
         SetBook.addActionListener(args -> {
             SetBooks(list.getSelectedValue().bk);
-
             try {
                 BookList = DbManager.getInstance().getAllBooks();
                 list.setListData(BookList.stream().map(ShowBook::new).toArray(ShowBook[]::new));
@@ -156,14 +165,13 @@ public class WindowsControl {
         });
 
         list.addListSelectionListener(args -> {
-            try {
-                lbName.setText(list.getSelectedValue().bk.getName());
-                lbAuthor.setText(list.getSelectedValue().bk.getAuthor());
-                lbCount.setText(String.valueOf(list.getSelectedValue().bk.getCount()));
-                lbType.setText(String.valueOf(list.getSelectedValue().bk.getType()));
-            } catch (NullPointerException e) {
-                System.out.println("系统加载中");
-            }
+            int index = list.getSelectedIndex();
+            if (index < 0) return;
+            Book b = list.getModel().getElementAt(index).bk;
+            lbName.setText(b.getName());
+            lbAuthor.setText(b.getAuthor());
+            lbCount.setText(String.valueOf(b.getCount()));
+            lbType.setText(String.valueOf(b.getType()));
         });
         btnNewButton_1.addActionListener(arg -> {
             try {
@@ -174,13 +182,6 @@ public class WindowsControl {
                 System.out.println(e);
             }
         });
-
-        // btnNewButton.addActionListener(arg -> {
-        // lbName.setText(list.getSelectedValue().bk.getName());
-        // lbAuthor.setText(list.getSelectedValue().bk.getAuthor());
-        // lbCount.setText(String.valueOf(list.getSelectedValue().bk.getCount()));
-        // lbType.setText(String.valueOf(list.getSelectedValue().bk.getType()));
-        // });
 
         contentPane.setLayout(null);
 
@@ -224,22 +225,21 @@ public class WindowsControl {
         lkfButton.setBounds(85, 80, 80, 25);
         panel.add(lkfButton);
         lkfButton.addActionListener(arg -> {
+            books.clear();
+            String bookName = BookNameText.getText();
+            String auth = authorText.getText();
             try {
-                if (BookNameText.getText().length() == 0) {
-                    if (authorText.getText().length() == 0) {
-
-                    } else {
-                        books = DbManager.getInstance().getBooksWithAuthor(authorText.getText());
+                if (bookName.isEmpty()) {
+                    if (!auth.isEmpty()) {
+                        books = DbManager.getInstance().getBooksWithAuthor(auth);
                     }
                 } else {
-                    if (author.getText().length() == 0) {
-                        books = DbManager.getInstance().getBooksWithName(BookNameText.getText());
+                    if (auth.isEmpty()) {
+                        books = DbManager.getInstance().getBooksWithName(bookName);
                     } else {
-                        books = DbManager.getInstance().getBooksWithNameAndAuthor(BookNameText.getText(),
-                                authorText.getText());
+                        books = DbManager.getInstance().getBooksWithNameAndAuthor(auth, bookName);
                     }
                 }
-                // BookList = books;
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -249,17 +249,15 @@ public class WindowsControl {
                 list.setListData(books.stream().map(ShowBook::new).toArray(ShowBook[]::new));
                 FindSuccess(frame);
             }
-            // MassageBox(frame);
-            // frame.setEnabled(false);
         });
 
         frame.setVisible(true);
     }
 
-    private static void Login() {
+    public static void Login() {
         JFrame frame = new JFrame("登录界面");
         frame.setSize(270, 230);
-        // frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();
         frame.add(panel);
@@ -289,9 +287,16 @@ public class WindowsControl {
         loginButton.setBounds(85, 100, 80, 30);
         panel.add(loginButton);
 
-        JButton RegisterButton = new JButton("Register");
-        RegisterButton.setBounds(85, 140, 80, 30);
-        panel.add(RegisterButton);
+        JButton jump = new JButton("hack");
+        jump.setBounds(85, 140, 80, 30);
+        panel.add(jump);
+        jump.addActionListener((args) -> {
+            user = User.EMPTY;
+            EventQueue.invokeLater(() -> {
+                Start();
+                frame.dispose();
+            });
+        });
 
         loginButton.addActionListener(args -> {
             String s = String.valueOf(passwordText.getPassword());
@@ -313,12 +318,6 @@ public class WindowsControl {
                 System.out.println(e);
             }
         });
-        RegisterButton.addActionListener(args -> {
-            String s = String.valueOf(passwordText.getPassword());
-            System.out.println("账号：" + userText.getText() + "   密码：" + s);
-            // frame.dispose();
-        });
-
         frame.setVisible(true);
     }
 
@@ -348,9 +347,12 @@ public class WindowsControl {
         textField.setFont(new Font("新宋体", Font.PLAIN, 16));
         textField.setColumns(10);
 
-        JComboBox comboBox = new JComboBox();
+        JComboBox<BookType> comboBox = new JComboBox<>();
         comboBox.setFont(new Font("新宋体", Font.PLAIN, 16));
-        comboBox.setModel(new DefaultComboBoxModel(new String[]{"Science", "Education", "History", "Literature"}));
+//        comboBox.setModel(new DefaultComboBoxModel(new String[]{"Science", "Education", "History", "Literature"}));
+        for (BookType type : BookType.class.getEnumConstants()) {
+            comboBox.addItem(type);
+        }
 
         JLabel lblNewLabel_1_1 = new JLabel("数目");
         lblNewLabel_1_1.setFont(new Font("新宋体", Font.PLAIN, 16));
@@ -420,15 +422,19 @@ public class WindowsControl {
             }
             try {
                 Integer.valueOf(textField_1.getText());
-                DbManager.getInstance().addBook(Enum.valueOf(BookType.class, comboBox.getToolTipText()),
-                        textField.getText(), Integer.valueOf(textField_1.getText()), textField_2.getText(),
-                        new BigDecimal(textField_3.getText()), Integer.valueOf(textField_4.getText()));
+                DbManager.getInstance().addBook(Enum.valueOf(BookType.class, ((BookType) comboBox.getSelectedItem()).name()),
+                        textField.getText(), Integer.parseInt(textField_1.getText()), textField_2.getText(),
+                        new BigDecimal(textField_3.getText()), Integer.parseInt(textField_4.getText()));
             } catch (NumberFormatException e) {
                 MassageBox(frame, "输入的数量或者页码或者价格并不是合格数字");
                 e.printStackTrace();
+                return;
             } catch (SQLException e) {
                 e.printStackTrace();
+                return;
             }
+            MassageBox(frame, "添加成功！");
+            frame.dispose();
         });
         /*
          *
@@ -537,7 +543,7 @@ public class WindowsControl {
         btnNewButton_1.setBounds(92, 119, 101, 37);
         contentPane.add(btnNewButton_1);
         btnNewButton_1.addActionListener(args -> {
-            UIManager.getInstance();
+            UIManager.getInstance().showMainPanel();
         });
         JButton Borrowing = new JButton("退出登录");
         Borrowing.setFont(new Font("宋体", Font.PLAIN, 16));

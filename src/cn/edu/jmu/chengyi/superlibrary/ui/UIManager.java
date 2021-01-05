@@ -74,16 +74,22 @@ public class UIManager {
     private UIManager() {
         uiStack = new Stack<>();
         userMainPanel = new UserMainPanel();
-        userMainPanel.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        userMainPanel.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         userInfoPanel = new UserInfoPanel();
         userInfoPanel.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         userBorrowPanel = new UserBorrowPanel();
         userBorrowPanel.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         borrowInfoPanel = new UserBorrowInfoPanel();
         borrowInfoPanel.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+
+    }
+
+    public void showMainPanel() {
         EventQueue.invokeLater(() -> {
-            userMainPanel.onShow();
-            uiStack.push(userMainPanel);
+            if (!userMainPanel.isActive()) {
+                userMainPanel.onShow();
+                uiStack.push(userMainPanel);
+            }
         });
     }
 

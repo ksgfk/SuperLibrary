@@ -45,7 +45,8 @@ public class Main {
 //		WindowsControl.main(null);
 
 //		WindowsControl.main(null);
-		UIManager.getInstance();
+        WindowsControl.Login();
+//		UIManager.getInstance();
 
 //        Book b = new Book(10, BookType.Education, "", 0, "", null, 0);
 //        User u = new User(1, "", "", UserPermission.USER);
