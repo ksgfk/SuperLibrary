@@ -1,8 +1,11 @@
 package cn.edu.jmu.chengyi.superlibrary;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public final class BorrowLog {
+	public static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
+
 	private final int id;
 	private final int borrowerId;
 	private final int bookId;

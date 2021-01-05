@@ -15,7 +15,6 @@ import java.util.Objects;
 public class UserInfoPanel extends JFrame {
     private User holdUser;
     private final JLabel idValue;
-    private final JPanel rootPanel;
     private final JTextField nameInputField;
     private final JTextField pwdInputField;
     private final JCheckBox isChangeBox;
@@ -59,7 +58,7 @@ public class UserInfoPanel extends JFrame {
     public UserInfoPanel() {
         addWindowListener(new InfoPanelEvent(this));
         setBounds(100, 100, 450, 300);
-        rootPanel = new JPanel();
+        JPanel rootPanel = new JPanel();
         rootPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(rootPanel);
         rootPanel.setLayout(null);

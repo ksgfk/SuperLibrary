@@ -118,6 +118,8 @@ public class DbManager {
     private PreparedStatement getLogId;
     private PreparedStatement getLogBk;
     private PreparedStatement setLogRt;
+    private PreparedStatement setLog;
+    private PreparedStatement addLogUn;
 
     private DbManager() {
         try {
@@ -395,11 +397,32 @@ public class DbManager {
             throw new IllegalArgumentException();
         }
         addLog = checkStatement(addLog, () -> SQL_ADD_LOG);
-        addLog.setInt(1, book.getId());
-        addLog.setInt(2, user.getId());
+        addLog.setInt(1, user.getId());
+        addLog.setInt(2, book.getId());
         addLog.setString(3, String.valueOf(System.currentTimeMillis()));
         addLog.setString(4, String.valueOf(returnTime.getTime()));
         addLog.execute();
+    }
+
+    public synchronized void addBorrowLog(int borrower, int book, Date startTime, Date endTime, boolean isRet) throws SQLException {
+        addLogUn = checkStatement(addLogUn, () -> "insert into borrowlog (borrowerId,bookId,startTime,endTime,isReturn) values (?,?,?,?,?)");
+        addLogUn.setInt(1, borrower);
+        addLogUn.setInt(2, book);
+        addLogUn.setString(3, String.valueOf(startTime.getTime()));
+        addLogUn.setString(4, String.valueOf(endTime.getTime()));
+        addLogUn.setBoolean(5, isRet);
+        addLogUn.execute();
+    }
+
+    public synchronized void setBorrowLog(BorrowLog log, int borrower, int book, Date startTime, Date endTime, boolean isRet) throws SQLException {
+        setLog = checkStatement(setLog, () -> "update borrowlog set borrowerId=?,bookId=?,startTime=?,endTime=?,isReturn=? where id=?");
+        setLog.setInt(1, borrower);
+        setLog.setInt(2, book);
+        setLog.setString(3, String.valueOf(startTime.getTime()));
+        setLog.setString(4, String.valueOf(endTime.getTime()));
+        setLog.setBoolean(5, isRet);
+        setLog.setInt(6, log.getId());
+        setLog.execute();
     }
 
     public synchronized List<BorrowLog> getBorrowLog(User user) throws SQLException {
@@ -414,6 +437,15 @@ public class DbManager {
         return getBorrowLog(getLogBk);
     }
 
+    private PreparedStatement getLogLogId;
+
+    public synchronized Optional<BorrowLog> getBorrowLog(int id) throws SQLException {
+        getLogLogId = checkStatement(getLogLogId, () -> sqlSelect(BORROW_TABLE, TAG_ID));
+        getLogLogId.setInt(1, id);
+        List<BorrowLog> logs = getBorrowLog(getLogLogId);
+        return logs.size() == 1 ? Optional.of(logs.get(0)) : Optional.empty();
+    }
+
     private synchronized List<BorrowLog> getBorrowLog(PreparedStatement sql) throws SQLException {
         ResultSet set = sql.executeQuery();
         List<BorrowLog> result = new ArrayList<>();
@@ -424,10 +456,10 @@ public class DbManager {
         return result;
     }
 
-    public synchronized void setBookReturn(BorrowLog log, boolean isReturn) throws SQLException {
+    public synchronized void setBookReturn(int id, boolean isReturn) throws SQLException {
         setLogRt = checkStatement(setLogRt, () -> sqlUpdate(BORROW_TABLE, TAG_IS_RETURN));
         setLogRt.setBoolean(1, isReturn);
-        setLogRt.setInt(2, log.getId());
+        setLogRt.setInt(2, id);
         setLogRt.execute();
     }
 }

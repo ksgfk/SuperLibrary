@@ -123,6 +123,27 @@ public class UserMainPanel extends JFrame {
         btnPanel.add(refreshBtn);
         refreshBtn.addActionListener((args) -> refreshData());
 
+        JButton borrowBtn = new JButton("借阅信息");
+        btnPanel.add(borrowBtn);
+        borrowBtn.addActionListener((args) -> {
+            int row = table.getSelectedRow();
+            if (row < 0) return;
+            int id = (Integer) table.getModel().getValueAt(row, 0);
+            Optional<User> u;
+            try {
+                u = DbManager.getInstance().getUser(id);
+            } catch (Exception e) {
+                UIManager.getInstance().errorMessage(e.getMessage());
+                return;
+            }
+            if (u.isEmpty()) {
+                UIManager.getInstance().errorMessage("User不存在");
+                return;
+            }
+            final User user = u.get();
+            EventQueue.invokeLater(() -> UIManager.getInstance().showUserBorrowLog(user));
+        });
+
         setLocationRelativeTo(null);
     }
 

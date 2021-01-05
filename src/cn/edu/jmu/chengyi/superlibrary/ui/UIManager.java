@@ -1,5 +1,6 @@
 package cn.edu.jmu.chengyi.superlibrary.ui;
 
+import cn.edu.jmu.chengyi.superlibrary.BorrowLog;
 import cn.edu.jmu.chengyi.superlibrary.User;
 
 import javax.swing.*;
@@ -67,6 +68,8 @@ public class UIManager {
     private final Stack<JFrame> uiStack;
     private final UserMainPanel userMainPanel;
     private final UserInfoPanel userInfoPanel;
+    private final UserBorrowPanel userBorrowPanel;
+    private final UserBorrowInfoPanel borrowInfoPanel;
 
     private UIManager() {
         uiStack = new Stack<>();
@@ -74,6 +77,10 @@ public class UIManager {
         userMainPanel.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         userInfoPanel = new UserInfoPanel();
         userInfoPanel.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        userBorrowPanel = new UserBorrowPanel();
+        userBorrowPanel.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        borrowInfoPanel = new UserBorrowInfoPanel();
+        borrowInfoPanel.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         EventQueue.invokeLater(() -> {
             userMainPanel.onShow();
             uiStack.push(userMainPanel);
@@ -88,12 +95,36 @@ public class UIManager {
         return userInfoPanel;
     }
 
+    public UserBorrowPanel getUserBorrowPanel() {
+        return userBorrowPanel;
+    }
+
+    public UserBorrowInfoPanel getBorrowInfoPanel() {
+        return borrowInfoPanel;
+    }
+
     public void showUserInfo(User user) {
         if (user == null) {
             errorMessage("User为空");
             return;
         }
         userInfoPanel.onShow(user);
+    }
+
+    public void showUserBorrowLog(User user) {
+        if (user == null) {
+            errorMessage("User为空");
+            return;
+        }
+        userBorrowPanel.onShow(user);
+    }
+
+    public void showBorrowInfo(BorrowLog log) {
+        if (log == null) {
+            errorMessage("Log为空");
+            return;
+        }
+        borrowInfoPanel.onShow(log);
     }
 
     public void errorMessage(Object msg) {

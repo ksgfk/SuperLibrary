@@ -4,20 +4,22 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import cn.edu.jmu.chengyi.superlibrary.ui.JTimeChooser;
 import cn.edu.jmu.chengyi.superlibrary.ui.UIManager;
 import cn.edu.jmu.chengyi.superlibrary.ui.WindowsControl;
 
 public class Main {
-	static {
-		DbManager.getInstance().createConnect("root", "123456");
-	}
+    static {
+        DbManager.getInstance().createConnect("root", "123456");
+    }
 
-	public static void main(String[] args) throws SQLException {
-		DbManager manager = DbManager.getInstance();
+    public static void main(String[] args) throws SQLException {
+        DbManager manager = DbManager.getInstance();
 
 //		manager.addBook(BookType.Science, "猫猫头", 1, "???", new BigDecimal("621"), 231);
 //		Optional<Book> b = manager.getBook(11);
@@ -42,9 +44,17 @@ public class Main {
 //		System.out.println(manager.getUser("kabi0210"));
 //		WindowsControl.main(null);
 
-		WindowsControl.main(null);
-//		UIManager.getInstance();
+//		WindowsControl.main(null);
+		UIManager.getInstance();
+
+//        Book b = new Book(10, BookType.Education, "", 0, "", null, 0);
+//        User u = new User(1, "", "", UserPermission.USER);
+//
+//        Calendar c = Calendar.getInstance();
+//        c.setTime(new Date());
+//        c.add(Calendar.MONTH, 3);
+//        DbManager.getInstance().addBorrowLog(b, u, c.getTime());
 
 //		manager.closeConnect();
-	}
+    }
 }
