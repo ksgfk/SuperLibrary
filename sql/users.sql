@@ -16,32 +16,29 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `books`
+-- Table structure for table `users`
 --
 
-DROP TABLE IF EXISTS `books`;
+DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `books` (
+CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `type` enum('Literature','History','Education','Science') NOT NULL,
   `name` varchar(255) NOT NULL,
-  `count` int(11) NOT NULL,
-  `author` varchar(255) NOT NULL,
-  `price` decimal(10,0) NOT NULL,
-  `page` int(11) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `permission` enum('ADMIN','USER') NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `books`
+-- Dumping data for table `users`
 --
 
-LOCK TABLES `books` WRITE;
-/*!40000 ALTER TABLE `books` DISABLE KEYS */;
-INSERT INTO `books` VALUES (1,'Literature','asd',123,'qwewq',123,444),(9,'Education','rwyrw',312,'mcaosi',240,123),(10,'Science','下北泽',3,'野兽',114514,1919810),(12,'Science','猫猫头',133,'xxs',621,231),(14,'Science','猫猫头',1,'cl',621,231),(15,'Literature','猫猫头',114,'hx',621,231),(16,'Education','上香',114222,'kmr十大',621,231),(17,'Science','km',1,'asd',3,4),(23,'Education','pcr',1,'kmr',518,21);
-/*!40000 ALTER TABLE `books` ENABLE KEYS */;
+LOCK TABLES `users` WRITE;
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (1,'Yumis','2c8509df0df65f9826dc872a9acfea532c1f53c7','ADMIN'),(2,'ksgfk','024451105371531cedcb178d4cba93108c2aa63c','ADMIN'),(3,'kabi0210','ff4b43ede3bfdaa52ea7f97593f8897fd9a41645','ADMIN'),(4,'14231231','da39a3ee5e6b4b0d3255bfef95601890afd80709','USER'),(10,'撒大苏打','3ffda59d96ec09a4bcd19bbade62c1aae09425e1','USER'),(11,'5Dion hi哦大厦','82b78ade270a0f2181404b5c66e01de959f057cc','USER'),(13,'小虎','89b98f7be8afc23ebefc3e02f86ebb89cbe74176','ADMIN'),(14,'123','366d73da655dc9a6ca33f133fdbdb7dc479c3a13','USER');
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -53,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-01-07 22:38:24
+-- Dump completed on 2021-01-07 22:38:27

@@ -9,9 +9,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class UserBorrowPanel extends JFrame {
     private static final Vector<String> COLUMN_OBJ = new Vector<String>() {
@@ -114,7 +113,7 @@ public class UserBorrowPanel extends JFrame {
             BorrowLog log;
             try {
                 Optional<BorrowLog> l = DbManager.getInstance().getBorrowLog(id);
-                log = l.orElseThrow();
+                log = l.orElseThrow(NoSuchElementException::new);
             } catch (SQLException | NoSuchElementException e) {
                 e.printStackTrace();
                 return;
@@ -151,7 +150,7 @@ public class UserBorrowPanel extends JFrame {
             v.add(u.getId());
             try {
                 Optional<Book> b = DbManager.getInstance().getBook(u.getBookId());
-                v.add(b.orElseThrow().getName());
+                v.add(b.orElseThrow(NoSuchElementException::new).getName());
             } catch (SQLException | NoSuchElementException e) {
                 v.add("查无此书");
             }

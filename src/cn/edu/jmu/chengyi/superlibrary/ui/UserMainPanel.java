@@ -7,6 +7,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Vector;
 
@@ -74,7 +75,7 @@ public class UserMainPanel extends JFrame {
             EventQueue.invokeLater(() -> {
                 User hasAdded;
                 try {
-                    hasAdded = DbManager.getInstance().getUser((Integer) data.get(data.size() - 1).get(0)).orElseThrow();
+                    hasAdded = DbManager.getInstance().getUser((Integer) data.get(data.size() - 1).get(0)).orElseThrow(NoSuchElementException::new);
                 } catch (Exception e) {
                     e.printStackTrace();
                     return;
@@ -97,7 +98,7 @@ public class UserMainPanel extends JFrame {
                 UIManager.getInstance().errorMessage(e.getMessage());
                 return;
             }
-            if (u.isEmpty()) {
+            if (!u.isPresent()) {
                 UIManager.getInstance().errorMessage("User不存在");
                 return;
             }
@@ -136,7 +137,7 @@ public class UserMainPanel extends JFrame {
                 UIManager.getInstance().errorMessage(e.getMessage());
                 return;
             }
-            if (u.isEmpty()) {
+            if (!u.isPresent()) {
                 UIManager.getInstance().errorMessage("User不存在");
                 return;
             }

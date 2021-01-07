@@ -10,6 +10,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.WindowEvent;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 public class UserInfoPanel extends JFrame {
@@ -161,7 +162,7 @@ public class UserInfoPanel extends JFrame {
         refreshBtn.addActionListener(args -> {
             User u;
             try {
-                u = DbManager.getInstance().getUser(holdUser.getId()).orElseThrow();
+                u = DbManager.getInstance().getUser(holdUser.getId()).orElseThrow(NoSuchElementException::new);
             } catch (Exception e) {
                 UIManager.getInstance().errorMessage(e.getMessage());
                 return;

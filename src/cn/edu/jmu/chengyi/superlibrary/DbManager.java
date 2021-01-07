@@ -8,10 +8,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -152,7 +149,8 @@ public class DbManager {
         }
     }
 
-    private synchronized PreparedStatement checkStatement(PreparedStatement prep, Supplier<String> getSql) throws SQLException {
+    private synchronized PreparedStatement checkStatement(PreparedStatement prep, Supplier<String> getSql)
+            throws SQLException {
         if (connect == null) throw new IllegalStateException("未与SQL建立连接");
         if (prep == null || prep.isClosed()) {
             return connect.prepareStatement(getSql.get());
@@ -170,10 +168,7 @@ public class DbManager {
         addBook.setString(4, author);
         addBook.setBigDecimal(5, price);
         addBook.setInt(6, page);
-        boolean result = addBook.execute();
-        if (result) {
-            throw new IllegalStateException("unknown error");
-        }
+        addBook.execute();
     }
 
     public synchronized void removeBook(int id) throws SQLException {
@@ -273,7 +268,7 @@ public class DbManager {
         if (result != 1) {
             throw new IllegalStateException("unknown error");
         }
-        return getBook(book.getId()).orElseThrow();
+        return getBook(book.getId()).orElseThrow(NoSuchElementException::new);
     }
 
     public synchronized void setBook(Book book, BookProperty property) throws SQLException {
@@ -362,7 +357,7 @@ public class DbManager {
     }
 
     public synchronized void removeUser(User user) throws SQLException {
-        User u = getUser(user.getId()).orElseThrow();
+        User u = getUser(user.getId()).orElseThrow(NoSuchElementException::new);
         if (u.getPermission() == UserPermission.ADMIN) {
             throw new IllegalArgumentException("You don't have permission to remove administrators");
         }
@@ -373,13 +368,13 @@ public class DbManager {
 
     public synchronized void removeUser(int id) throws SQLException {
         Optional<User> u = getUser(id);
-        if (u.isEmpty()) throw new IllegalArgumentException("no user id" + id);
+        if (!u.isPresent()) throw new IllegalArgumentException("no user id" + id);
         removeUser(u.get());
     }
 
     public synchronized void removeUser(String name) throws SQLException {
         Optional<User> u = getUser(name);
-        if (u.isEmpty()) throw new IllegalArgumentException("no user id" + name);
+        if (!u.isPresent()) throw new IllegalArgumentException("no user id" + name);
         removeUser(u.get());
     }
 

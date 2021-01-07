@@ -139,7 +139,7 @@ public class UserBorrowInfoPanel extends JFrame {
             int inputBook = Integer.parseInt(bookInputField.getText());
             try {
                 DbManager.getInstance().setBorrowLog(log, log.getBorrowerId(), inputBook, startTime, endTime, isReturnBox.isSelected());
-                this.log = DbManager.getInstance().getBorrowLog(log.getId()).orElseThrow();
+                this.log = DbManager.getInstance().getBorrowLog(log.getId()).orElseThrow(NoSuchElementException::new);
             } catch (SQLException | NoSuchElementException e) {
                 e.printStackTrace();
             }
